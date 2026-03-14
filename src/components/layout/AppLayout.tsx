@@ -12,6 +12,7 @@ import {
 import type { MenuProps } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Outlet } from "react-router";
+import constants from "../../utils/constants.ts";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -57,7 +58,7 @@ export const AppLayout: FC = () => {
                     <Outlet/>
                 </Content>
                 <Footer style={{ textAlign: 'center' }}>
-                    Ant Design ©{new Date().getFullYear()} Created by Ant UED
+                    Rostelecom TMS v{constants.VERSION}
                 </Footer>
             </Layout>
         </Layout>
