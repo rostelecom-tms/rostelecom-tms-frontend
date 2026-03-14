@@ -5,7 +5,9 @@ import {BrowserRouter} from "react-router";
 import {ConfigProvider} from "antd";
 import ruRu from "antd/locale/ru_RU";
 import {App} from "./App.tsx";
+import {init} from "./init.ts";
 
+init()
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
       <BrowserRouter>
