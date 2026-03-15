@@ -8,3 +8,12 @@ export const useUsers = () => {
         retry: false
     })
 }
+
+export const useMe = () => {
+    return useQuery({
+        queryKey: ['me'],
+        queryFn: userService.me,
+        retry: false
+    })
+}
+
