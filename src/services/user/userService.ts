@@ -9,13 +9,13 @@ import {api} from "../axios.ts";
 
 export default {
     me: async (): Promise<IUser> => {
-        const response = await api.get<IUser>(`/user/me`)
+        const response = await api.get<IUser>(`/auth/me`)
         return response.data
     },
 
     login: async (credentials: IUserLoginRequest): Promise<void> => {
         const response = await api.post<IUserLoginResponse>(`/auth/login`, credentials)
-        localStorage.setItem('accessToken', 'Bearer ' + response.data.accessToken)
+        localStorage.setItem('accessToken', response.data.accessToken)
     },
 
     list: async (): Promise<IUser[]> => {
