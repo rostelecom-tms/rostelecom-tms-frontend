@@ -10,7 +10,7 @@ export const LoginPage = () => {
 
     const onFinish = async (credentials: IUserLoginRequest) => {
         await userService.login(credentials)
-        navigate(`/`, {replace: true})
+        navigate(`/dashboard`, {replace: true})
     }
 
     return (
