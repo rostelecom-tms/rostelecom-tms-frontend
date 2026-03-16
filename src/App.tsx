@@ -17,10 +17,13 @@ export const App = () => {
 
                     <Route element={<PrivateRoute/>}>
                         <Route path="/" element={<AppLayout/>}>
-                            <Route path="/" element={<DashboardPage/>}/>
+                            <Route index element={<Navigate to="/dashboard" replace />} />
+                            <Route path="/dashboard" element={<DashboardPage/>}/>
+                            <Route path="*" element={<Navigate to="/dashboard" replace />} />
                         </Route>
                     </Route>
-                    <Route path="*" element={<Navigate to="/" replace/>}/>
+
+                    <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
             </QueryClientProvider>
         </StrictMode>
