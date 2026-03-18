@@ -1,12 +1,21 @@
 import { Button, Card, Form, Input, Typography } from 'antd'
 import userService from "../../services/user/userService.ts";
 import type {IUserLoginRequest} from "../../models/user/user.ts";
-import {useNavigate} from "react-router";
+import {Navigate, useNavigate} from "react-router";
+import {useMe} from "../../hooks/user/userHooks.ts";
 
 const { Title, Text } = Typography
 
 export const LoginPage = () => {
     const navigate = useNavigate()
+
+    const { data: me, isLoading } = useMe()
+
+    if (isLoading) return <div/>
+
+    if (me) {
+        return <Navigate to={'/dashboard'} replace/>
+    }
 
     const onFinish = async (credentials: IUserLoginRequest) => {
         await userService.login(credentials)
