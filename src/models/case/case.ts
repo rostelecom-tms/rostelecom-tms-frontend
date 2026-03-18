@@ -1,6 +1,6 @@
 import type {IStep} from "./step.ts";
 import type {IGroup} from "./group.ts";
-
+// todo anemic version
 export interface ICase {
     id: number
     title: string
