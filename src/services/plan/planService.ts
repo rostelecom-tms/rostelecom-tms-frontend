@@ -12,8 +12,8 @@ export default {
         return response.data
     },
 
-    create: async (id: number, request: IPlanCreateRequest): Promise<IPlan[]> => {
-        const response = await api.post<IPlan[]>(`/plans/${id}`, request)
+    create: async (request: IPlanCreateRequest): Promise<IPlan> => {
+        const response = await api.post<IPlan>(`/plans`, request)
         return response.data
     },
 
@@ -26,7 +26,7 @@ export default {
     },
 
     addCase: async (planId: number, caseId: number): Promise<void> => {
-        await api.post<IPlan[]>(`/plans/${planId}/add-case/${caseId}`)
+        await api.post<void>(`/plans/${planId}/add-case/${caseId}`)
     },
 
     removeCase: async (planId: number, caseId: number): Promise<void> => {
