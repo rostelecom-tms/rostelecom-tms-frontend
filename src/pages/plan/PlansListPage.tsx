@@ -1,5 +1,5 @@
 import type {ColumnsType} from "antd/es/table";
-import {Alert, Card, Spin, Table} from "antd";
+import {Alert, Button, Card, Space, Spin, Table} from "antd";
 import {useNavigate} from "react-router";
 import Title from "antd/lib/typography/Title";
 import {usePlans} from "../../hooks/plan/planHooks.ts";
@@ -27,7 +27,6 @@ export const PlansListPage = () => {
             key: 'createdAt',
             render: (value: string) => new Date(value).toLocaleString('ru-RU'),
         },
-
     ]
 
     if (isLoading) {
@@ -35,21 +34,28 @@ export const PlansListPage = () => {
     }
 
     if (isError) {
-        return <Alert type="error" title="Не удалось загрузить тест-кейсы" />
+        return <Alert type="error" title="Не удалось загрузить тест-планы" />
     }
 
     return (
         <Card>
-            <Title level={2}>Тест-планы</Title>
+            <Space
+                style={{width: '100%', justifyContent: 'space-between', marginBottom: 16}}
+            >
+                <Title level={2} style={{margin: 0}}>Тест-планы</Title>
+                <Button type="primary" onClick={() => navigate('/plans/create')}>
+                    Создать план
+                </Button>
+            </Space>
 
             <Table<IPlan>
                 rowKey="id"
                 columns={columns}
                 dataSource={data ?? []}
-                pagination={{ pageSize: 10 }}
+                pagination={{pageSize: 10}}
                 onRow={record => ({
                     onClick: () => navigate(`/plans/${record.id}`),
-                    style: { cursor: 'pointer' },
+                    style: {cursor: 'pointer'},
                 })}
             />
         </Card>
