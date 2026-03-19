@@ -1,9 +1,12 @@
 import type {IRole} from "./role.ts";
 
-export interface IUser {
+export interface IUserCompact {
     id: number
     email: string
     username: string
+}
+
+export interface IUser extends IUserCompact {
     role: IRole
     createdAt: string
 }
