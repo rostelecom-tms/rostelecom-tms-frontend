@@ -1,9 +1,12 @@
 import type {IStep} from "./step.ts";
 import type {IGroup} from "./group.ts";
 // todo anemic version
-export interface ICase {
+export interface ICaseCompact {
     id: number
     title: string
+}
+
+export interface ICase extends ICaseCompact{
     group: IGroup
     description: string
     preconditions: string

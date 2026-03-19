@@ -1,9 +1,14 @@
 import {api} from "../axios.ts";
-import type {ICase, ICaseCreateRequest, ICaseUpdateRequest} from "../../models/case/case.ts";
+import type {ICase, ICaseCompact, ICaseCreateRequest, ICaseUpdateRequest} from "../../models/case/case.ts";
 
 export default {
-    list: async (groupId?: number): Promise<ICase[]> => {
-        const response = await api.get<ICase[]>('/cases', {params: groupId})
+    list: async (groupId?: number, planId?: number): Promise<ICaseCompact[]> => {
+        const response = await api.get<ICaseCompact[]>('/cases', {
+            params: {
+                groupId,
+                planId,
+            },
+        })
         return response.data
     },
 
