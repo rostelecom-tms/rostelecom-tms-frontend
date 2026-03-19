@@ -1,7 +1,19 @@
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import {Alert, Breadcrumb, Button, Card, Descriptions, Space, Spin, Table, Typography} from 'antd'
+import {
+    Alert,
+    Breadcrumb,
+    Button,
+    Card,
+    Descriptions,
+    Popconfirm,
+    Space,
+    Spin,
+    Table,
+    Typography,
+    App
+} from 'antd'
 import { Link, useNavigate, useParams } from 'react-router'
-import {usePlan} from "../../hooks/plan/planHooks.ts";
+import {useDeletePlan, usePlan} from "../../hooks/plan/planHooks.ts";
 import type {ColumnsType} from "antd/es/table";
 import type {ICaseCompact} from "../../models/case/case.ts";
 
@@ -10,18 +22,17 @@ const { Title, Paragraph, Text } = Typography
 export const OnePlanPage = () => {
     const navigate = useNavigate()
     const { id } = useParams()
+    const planId = Number(id)
+    const {message} = App.useApp()
 
-    const {data: testPlan, isLoading, isError} = usePlan(Number(id))
+    const {data: testPlan, isLoading, isError} = usePlan(planId)
+    const deletePlanMutation = useDeletePlan()
 
     if (isLoading) {
         return <Spin />
     }
 
-    if (isError) {
-        return <Alert type="error" title="Не удалось загрузить тест-план" />
-    }
-
-    if (testPlan === undefined) {
+    if (isError || testPlan === undefined) {
         return <Alert type="error" title="Не удалось загрузить тест-план" />
     }
 
@@ -53,6 +64,15 @@ export const OnePlanPage = () => {
         },
     ]
 
+    const handleDelete = () => {
+        navigate('/plans', {replace: true})
+        deletePlanMutation.mutate(planId, {
+            onSuccess: () => {
+                message.success('Тест-план удалён').then()
+            },
+        })
+    }
+
     return (
         <Space orientation="vertical" size="large" style={{ width: '100%' }}>
             <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
@@ -67,13 +87,30 @@ export const OnePlanPage = () => {
                     ]}
                 />
 
-                <Button
-                    icon={<ArrowLeftOutlined />}
-                    onClick={() => navigate(-1)}
-                    style={{ width: 'fit-content' }}
-                >
-                    Назад
-                </Button>
+                <Space>
+                    <Button
+                        icon={<ArrowLeftOutlined />}
+                        onClick={() => navigate(-1)}
+                    >
+                        Назад
+                    </Button>
+
+                    <Button onClick={() => navigate(`/plans/${planId}/edit`)}>
+                        Редактировать
+                    </Button>
+
+                    <Popconfirm
+                        title="Удалить тест-план?"
+                        description="Это действие нельзя отменить"
+                        onConfirm={handleDelete}
+                        okText="Удалить"
+                        cancelText="Отмена"
+                    >
+                        <Button danger loading={deletePlanMutation.isPending}>
+                            Удалить
+                        </Button>
+                    </Popconfirm>
+                </Space>
             </Space>
 
             <Card>
