@@ -64,7 +64,7 @@ export const OneCasePage = () => {
                         {testCase.group?.name ?? testCase.group?.id ?? 'Не указана'}
                     </Descriptions.Item>
 
-                    <Descriptions.Item label="Created At">
+                    <Descriptions.Item label="Создан">
                         {new Date(testCase.createdAt).toLocaleString('ru-RU')}
                     </Descriptions.Item>
                 </Descriptions>

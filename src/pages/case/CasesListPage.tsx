@@ -1,6 +1,6 @@
 import {useCases} from "../../hooks/case/caseHooks.ts";
 import type {ColumnsType} from "antd/es/table";
-import type {ICase} from "../../models/case/case.ts";
+import type {ICaseCompact} from "../../models/case/case.ts";
 import {Alert, Card, Spin, Table} from "antd";
 import {useNavigate} from "react-router";
 import Title from "antd/lib/typography/Title";
@@ -9,7 +9,7 @@ export const CasesListPage = () => {
     const navigate = useNavigate()
     const {data, isLoading, isError} = useCases()
 
-    const columns: ColumnsType<ICase> = [
+    const columns: ColumnsType<ICaseCompact> = [
         {
             title: 'ID',
             dataIndex: 'id',
@@ -35,7 +35,7 @@ export const CasesListPage = () => {
         <Card>
             <Title level={2}>Тест-кейсы</Title>
 
-            <Table<ICase>
+            <Table<ICaseCompact>
                 rowKey="id"
                 columns={columns}
                 dataSource={data ?? []}

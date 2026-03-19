@@ -7,8 +7,8 @@ export default {
         return response.data
     },
 
-    get: async (id: number): Promise<IPlan[]> => {
-        const response = await api.get<IPlan[]>(`/plans/${id}`)
+    get: async (id: number): Promise<IPlan> => {
+        const response = await api.get<IPlan>(`/plans/${id}`)
         return response.data
     },
 
