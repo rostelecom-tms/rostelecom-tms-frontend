@@ -1,6 +1,6 @@
-import type {IStep} from "./step.ts";
+import type {IStep, IStepCreateRequest, IStepUpdateRequest} from "./step.ts";
 import type {IGroup} from "./group.ts";
-// todo anemic version
+
 export interface ICaseCompact {
     id: number
     title: string
@@ -21,7 +21,7 @@ export interface ICaseCreateRequest {
     description?: string
     preconditions?: string
     postconditions?: string
-    steps: IStep[]
+    steps: IStepCreateRequest[]
 }
 
 export interface ICaseUpdateRequest {
@@ -30,5 +30,5 @@ export interface ICaseUpdateRequest {
     description?: string
     preconditions?: string
     postconditions?: string
-    steps?: IStep[]
+    steps?: IStepUpdateRequest[]
 }

@@ -1,26 +1,34 @@
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import {Alert, Breadcrumb, Button, Card, Descriptions, List, Space, Spin, Typography} from 'antd'
+import {Alert, App, Breadcrumb, Button, Card, Descriptions, Popconfirm, Space, Spin, Table, Typography} from 'antd'
 import { Link, useNavigate, useParams } from 'react-router'
-import { useCase } from '../../hooks/case/caseHooks.ts'
+import {useCase, useDeleteCase} from '../../hooks/case/caseHooks.ts'
 
 const { Title, Paragraph, Text } = Typography
 
 export const OneCasePage = () => {
     const navigate = useNavigate()
     const { id } = useParams()
+    const caseId = Number(id)
+    const {message} = App.useApp()
 
-    const {data: testCase, isLoading, isError} = useCase(Number(id))
+    const {data: testCase, isLoading, isError} = useCase(caseId)
+    const deleteCaseMutation = useDeleteCase()
 
     if (isLoading) {
         return <Spin />
     }
 
-    if (isError) {
+    if (isError || testCase === undefined) {
         return <Alert type="error" title="Не удалось загрузить тест-кейс" />
     }
 
-    if (testCase === undefined) {
-        return <Alert type="error" title="Не удалось загрузить тест-кейс" />
+    const handleDelete = () => {
+        navigate('/cases', {replace: true})
+        deleteCaseMutation.mutate(caseId, {
+            onSuccess: () => {
+                message.success('Тест-кейс удалён').then()
+            },
+        })
     }
 
     return (
@@ -37,13 +45,30 @@ export const OneCasePage = () => {
                     ]}
                 />
 
-                <Button
-                    icon={<ArrowLeftOutlined />}
-                    onClick={() => navigate(-1)}
-                    style={{ width: 'fit-content' }}
-                >
-                    Назад
-                </Button>
+                <Space>
+                    <Button
+                        icon={<ArrowLeftOutlined />}
+                        onClick={() => navigate(-1)}
+                    >
+                        Назад
+                    </Button>
+
+                    <Button onClick={() => navigate(`/cases/${caseId}/edit`)}>
+                        Редактировать
+                    </Button>
+
+                    <Popconfirm
+                        title="Удалить тест-кейс?"
+                        description="Это действие нельзя отменить"
+                        onConfirm={handleDelete}
+                        okText="Удалить"
+                        cancelText="Отмена"
+                    >
+                        <Button danger loading={deleteCaseMutation.isPending}>
+                            Удалить
+                        </Button>
+                    </Popconfirm>
+                </Space>
             </Space>
 
             <Card>
@@ -90,25 +115,29 @@ export const OneCasePage = () => {
 
             <Card title="Шаги">
                 {testCase.steps?.length ? (
-                    <List
+                    <Table
                         dataSource={testCase.steps}
-                        renderItem={(step, index) => (
-                            <List.Item>
-                                <Space orientation="vertical" size="small" style={{ width: '100%' }}>
-                                    <Text strong>Шаг {index + 1}</Text>
-
-                                    <div>
-                                        <Text strong>Действие: </Text>
-                                        <Text>{step.action ?? '-'}</Text>
-                                    </div>
-
-                                    <div>
-                                        <Text strong>Ожидаемый результат: </Text>
-                                        <Text>{step.expectedResult ?? '-'}</Text>
-                                    </div>
-                                </Space>
-                            </List.Item>
-                        )}
+                        rowKey={(step) => step.id}
+                        pagination={false}
+                        columns={[
+                            {
+                                title: '№',
+                                render: (_, __, index) => index + 1,
+                                width: 60,
+                            },
+                            {
+                                title: 'Действие',
+                                dataIndex: 'action',
+                                key: 'action',
+                                render: (text) => text || '-',
+                            },
+                            {
+                                title: 'Ожидаемый результат',
+                                dataIndex: 'expectedResult',
+                                key: 'expectedResult',
+                                render: (text) => text || '-',
+                            },
+                        ]}
                     />
                 ) : (
                     <Text type="secondary">Шагов нет</Text>
