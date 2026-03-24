@@ -12,6 +12,8 @@ import {OnePlanPage} from "./pages/plan/OnePlanPage.tsx";
 import {CreatePlanPage} from "./pages/plan/CreatePlanPage.tsx";
 import {EditPlanPage} from "./pages/plan/EditPlanPage.tsx";
 import {App as AntApp} from "antd";
+import {CreateCasePage} from "./pages/case/CreateCasePage.tsx";
+import {EditCasePage} from "./pages/case/EditCasePage.tsx";
 
 const queryClient = new QueryClient()
 
@@ -31,8 +33,10 @@ export const App = () => {
                             <Route path="/plans/create" element={<CreatePlanPage />} />
                             <Route path="/plans/:id" element={<OnePlanPage />} />
                             <Route path="/plans/:id/edit" element={<EditPlanPage />} />
-                            <Route path="/cases" element={<CasesListPage/>}/>
+                            <Route path="/cases" element={<CasesListPage />} />
+                            <Route path="/cases/create" element={<CreateCasePage />} />
                             <Route path="/cases/:id" element={<OneCasePage />} />
+                            <Route path="/cases/:id/edit" element={<EditCasePage />} />
                             <Route path="*" element={<Navigate to="/dashboard" replace />} />
                         </Route>
                     </Route>

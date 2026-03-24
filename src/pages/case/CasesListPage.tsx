@@ -1,7 +1,7 @@
 import {useCases} from "../../hooks/case/caseHooks.ts";
 import type {ColumnsType} from "antd/es/table";
 import type {ICaseCompact} from "../../models/case/case.ts";
-import {Alert, Card, Spin, Table} from "antd";
+import {Alert, Button, Card, Space, Spin, Table} from "antd";
 import {useNavigate} from "react-router";
 import Title from "antd/lib/typography/Title";
 
@@ -33,7 +33,14 @@ export const CasesListPage = () => {
 
     return (
         <Card>
-            <Title level={2}>Тест-кейсы</Title>
+            <Space
+                style={{width: '100%', justifyContent: 'space-between', marginBottom: 16}}
+            >
+                <Title level={2} style={{margin: 0}}>Тест-кейсы</Title>
+                <Button type="primary" onClick={() => navigate('/cases/create')}>
+                    Создать кейс
+                </Button>
+            </Space>
 
             <Table<ICaseCompact>
                 rowKey="id"
