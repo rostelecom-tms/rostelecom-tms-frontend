@@ -302,7 +302,7 @@ export const OneCasePage = () => {
                             label="Дата запуска"
                             rules={[{required: true, message: "Укажите дату запуска"}]}
                         >
-                            <DatePicker showTime style={{width: "100%"}}/>
+                            <DatePicker showTime={{format: "HH:mm"}} format="DD.MM.YYYY HH:mm" style={{width: "100%"}}/>
                         </Form.Item>
 
                         <Space>

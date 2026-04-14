@@ -80,11 +80,11 @@ export const EditPlanForm = ({
             </Form.Item>
 
             <Form.Item label="Дата начала" name="startDate">
-                <DatePicker showTime style={{width: "100%"}} />
+                <DatePicker showTime={{format: "HH:mm"}} format="DD.MM.YYYY HH:mm" style={{width: "100%"}} />
             </Form.Item>
 
             <Form.Item label="Дата окончания" name="endDate">
-                <DatePicker showTime style={{width: "100%"}} />
+                <DatePicker showTime={{format: "HH:mm"}} format="DD.MM.YYYY HH:mm" style={{width: "100%"}} />
             </Form.Item>
 
             <Form.Item label="Ответственный" name="responsibleUserId">

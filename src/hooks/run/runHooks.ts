@@ -2,6 +2,15 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import runService from "../../services/run/runService.ts";
 import type {IRunCreateRequest, IRunListParams} from "../../models/run/run.ts";
 
+export const useRunsPage = (filters?: IRunListParams, enabled = true) => {
+    return useQuery({
+        queryKey: ["runs-page", filters ?? {}],
+        queryFn: () => runService.listPage(filters),
+        retry: false,
+        enabled,
+    })
+}
+
 export const useRuns = (filters?: IRunListParams, enabled = true) => {
     return useQuery({
         queryKey: ["runs", filters ?? {}],

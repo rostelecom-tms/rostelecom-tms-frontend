@@ -85,7 +85,7 @@ export const CreatePlanForm = ({loading, onSubmit}: CreatePlanFormProps) => {
                 name="startDate"
                 rules={[{required: true, message: "Выберите дату начала"}]}
             >
-                <DatePicker showTime style={{width: "100%"}} />
+                <DatePicker showTime={{format: "HH:mm"}} format="DD.MM.YYYY HH:mm" style={{width: "100%"}} />
             </Form.Item>
 
             <Form.Item
@@ -93,7 +93,7 @@ export const CreatePlanForm = ({loading, onSubmit}: CreatePlanFormProps) => {
                 name="endDate"
                 rules={[{required: true, message: "Выберите дату окончания"}]}
             >
-                <DatePicker showTime style={{width: "100%"}} />
+                <DatePicker showTime={{format: "HH:mm"}} format="DD.MM.YYYY HH:mm" style={{width: "100%"}} />
             </Form.Item>
 
             <Form.Item
