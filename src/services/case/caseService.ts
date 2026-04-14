@@ -1,15 +1,34 @@
 import {api} from "../axios.ts";
 import type {ICase, ICaseCompact, ICaseCreateRequest, ICaseUpdateRequest} from "../../models/case/case.ts";
+import type {IPageResponse} from "../../models/common/pagination.ts";
+
+export interface ICaseListParams {
+    groupId?: number
+    planId?: number
+    title?: string
+    tag?: string
+    createdFrom?: string
+    createdTo?: string
+    page?: number
+    size?: number
+}
 
 export default {
+    listPage: async (params?: ICaseListParams): Promise<IPageResponse<ICaseCompact>> => {
+        const response = await api.get<IPageResponse<ICaseCompact>>("/cases", {params})
+        return response.data
+    },
+
     list: async (groupId?: number, planId?: number): Promise<ICaseCompact[]> => {
-        const response = await api.get<ICaseCompact[]>('/cases', {
+        const response = await api.get<IPageResponse<ICaseCompact>>("/cases", {
             params: {
                 groupId,
                 planId,
+                page: 0,
+                size: 1000,
             },
         })
-        return response.data
+        return response.data.content
     },
 
     get: async (id: number): Promise<ICase> => {

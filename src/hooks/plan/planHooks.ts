@@ -1,11 +1,19 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import planService from "../../services/plan/planService.ts";
+import planService, {type IPlanListParams} from "../../services/plan/planService.ts";
 import type {IPlanCreateRequest, IPlanUpdateRequest} from "../../models/plan/plan.ts";
 
 export const usePlans = () => {
     return useQuery({
         queryKey: ['plans'],
         queryFn: () => planService.list(),
+        retry: false
+    })
+}
+
+export const usePlansPage = (params?: IPlanListParams) => {
+    return useQuery({
+        queryKey: ['plans-page', params ?? {}],
+        queryFn: () => planService.listPage(params),
         retry: false
     })
 }

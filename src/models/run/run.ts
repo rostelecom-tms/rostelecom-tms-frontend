@@ -28,6 +28,8 @@ export interface IRunListParams {
     executedFrom?: string
     executedTo?: string
     groupId?: number
+    page?: number
+    size?: number
 }
 
 export interface IRunCreateRequest {
