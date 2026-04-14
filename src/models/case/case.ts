@@ -5,6 +5,7 @@ export interface ICaseCompact {
     id: number
     title: string
     groupId: number
+    tags: string[]
 }
 
 export interface ICase extends ICaseCompact{
@@ -12,6 +13,7 @@ export interface ICase extends ICaseCompact{
     description: string
     preconditions: string
     postconditions: string
+    tags: string[]
     steps: IStep[]
     createdAt: string
 }
@@ -22,6 +24,7 @@ export interface ICaseCreateRequest {
     description?: string
     preconditions?: string
     postconditions?: string
+    tags?: string[]
     steps: IStepCreateRequest[]
 }
 
@@ -31,5 +34,6 @@ export interface ICaseUpdateRequest {
     description?: string
     preconditions?: string
     postconditions?: string
+    tags?: string[]
     steps?: IStepUpdateRequest[]
 }

@@ -70,6 +70,9 @@ const buildExplorerTree = (groups: IGroup[], cases: ICaseCompact[]): ExplorerNod
                     <FileTextOutlined />
                     <span>{testCase.title}</span>
                     <Tag color="green">Case</Tag>
+                    {(testCase.tags ?? []).map(tag => (
+                        <Tag key={`${testCase.id}-${tag}`}>{tag}</Tag>
+                    ))}
                 </Space>
             ),
             isLeaf: true,
