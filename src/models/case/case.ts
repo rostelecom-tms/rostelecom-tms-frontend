@@ -4,6 +4,7 @@ import type {IGroup} from "./group.ts";
 export interface ICaseCompact {
     id: number
     title: string
+    groupId: number
 }
 
 export interface ICase extends ICaseCompact{
