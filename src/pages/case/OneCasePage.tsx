@@ -1,13 +1,13 @@
-import { ArrowLeftOutlined } from '@ant-design/icons'
-import {Alert, App, Breadcrumb, Button, Card, Descriptions, Popconfirm, Space, Spin, Table, Typography} from 'antd'
-import { Link, useNavigate, useParams } from 'react-router'
+﻿import {ArrowLeftOutlined} from '@ant-design/icons'
+import {Alert, App, Breadcrumb, Button, Card, Descriptions, Popconfirm, Space, Spin, Table, Tag, Typography} from 'antd'
+import {Link, useNavigate, useParams} from 'react-router'
 import {useCase, useDeleteCase} from '../../hooks/case/caseHooks.ts'
 
-const { Title, Paragraph, Text } = Typography
+const {Title, Paragraph, Text} = Typography
 
 export const OneCasePage = () => {
     const navigate = useNavigate()
-    const { id } = useParams()
+    const {id} = useParams()
     const caseId = Number(id)
     const {message} = App.useApp()
 
@@ -15,11 +15,11 @@ export const OneCasePage = () => {
     const deleteCaseMutation = useDeleteCase()
 
     if (isLoading) {
-        return <Spin />
+        return <Spin/>
     }
 
     if (isError || testCase === undefined) {
-        return <Alert type="error" title="Не удалось загрузить тест-кейс" />
+        return <Alert type="error" title="Не удалось загрузить тест-кейс"/>
     }
 
     const handleDelete = () => {
@@ -32,12 +32,12 @@ export const OneCasePage = () => {
     }
 
     return (
-        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
-            <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{width: '100%'}}>
+            <Space orientation="vertical" size="middle" style={{width: '100%'}}>
                 <Breadcrumb
                     items={[
                         {
-                            title: <Link to="/cases">Test Cases</Link>,
+                            title: <Link to="/cases">Тест-кейсы и группы</Link>,
                         },
                         {
                             title: testCase.title,
@@ -47,7 +47,7 @@ export const OneCasePage = () => {
 
                 <Space>
                     <Button
-                        icon={<ArrowLeftOutlined />}
+                        icon={<ArrowLeftOutlined/>}
                         onClick={() => navigate(-1)}
                     >
                         Назад
@@ -72,7 +72,7 @@ export const OneCasePage = () => {
             </Space>
 
             <Card>
-                <Title level={2} style={{ marginTop: 0 }}>
+                <Title level={2} style={{marginTop: 0}}>
                     {testCase.title}
                 </Title>
 
@@ -89,6 +89,12 @@ export const OneCasePage = () => {
                         {testCase.group?.name ?? testCase.group?.id ?? 'Не указана'}
                     </Descriptions.Item>
 
+                    <Descriptions.Item label="Теги">
+                        {testCase.tags?.length
+                            ? testCase.tags.map(tag => <Tag key={tag}>{tag}</Tag>)
+                            : 'Нет тегов'}
+                    </Descriptions.Item>
+
                     <Descriptions.Item label="Создан">
                         {new Date(testCase.createdAt).toLocaleString('ru-RU')}
                     </Descriptions.Item>
@@ -96,19 +102,19 @@ export const OneCasePage = () => {
             </Card>
 
             <Card title="Описание">
-                <Paragraph style={{ marginBottom: 0 }}>
+                <Paragraph style={{marginBottom: 0}}>
                     {testCase.description || 'Нет описания'}
                 </Paragraph>
             </Card>
 
             <Card title="Предусловия">
-                <Paragraph style={{ marginBottom: 0 }}>
+                <Paragraph style={{marginBottom: 0}}>
                     {testCase.preconditions || 'Нет предусловий'}
                 </Paragraph>
             </Card>
 
             <Card title="Постусловия">
-                <Paragraph style={{ marginBottom: 0 }}>
+                <Paragraph style={{marginBottom: 0}}>
                     {testCase.postconditions || 'Нет постусловий'}
                 </Paragraph>
             </Card>
