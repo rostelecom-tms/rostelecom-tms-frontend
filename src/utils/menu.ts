@@ -2,7 +2,6 @@ import {
     AlertOutlined,
     BookOutlined,
     FileTextOutlined,
-    FolderOpenOutlined,
     RocketOutlined,
     UserOutlined,
     PieChartOutlined
@@ -20,13 +19,8 @@ export const navigationTopItems = [
         icon: BookOutlined,
     },
     {
-        key: '/groups',
-        label: 'Группы',
-        icon: FolderOpenOutlined,
-    },
-    {
         key: '/cases',
-        label: 'Тест-кейсы',
+        label: 'Тест-кейсы и группы',
         icon: FileTextOutlined,
     },
     {
@@ -48,4 +42,3 @@ export const navigationBottomItems = [
         icon: UserOutlined,
     },
 ]
-
