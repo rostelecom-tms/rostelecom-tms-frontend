@@ -149,7 +149,6 @@ export const CasesListPage = () => {
             if (groupId != null) {
                 setSelectedNode({kind: "case", id, groupId});
             }
-            navigate(`/cases/${id}`);
         }
     };
 
