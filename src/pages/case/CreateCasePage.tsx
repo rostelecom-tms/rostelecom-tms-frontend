@@ -1,8 +1,9 @@
 import {ArrowLeftOutlined} from "@ant-design/icons";
 import {Alert, App, Breadcrumb, Button, Card, Space, Spin, Typography} from "antd";
+import {useMemo} from "react";
 import {Link, useNavigate} from "react-router";
 import {CreateCaseForm, type CreateCaseSubmitValues} from "../../components/case/CreateCaseForm.tsx";
-import {useCreateCase} from "../../hooks/case/caseHooks.ts";
+import {useCases, useCreateCase} from "../../hooks/case/caseHooks.ts";
 import {useGroups} from "../../hooks/case/groupHooks.ts";
 
 const {Title} = Typography;
@@ -13,6 +14,11 @@ export const CreateCasePage = () => {
     const {message} = App.useApp()
 
     const {data: groups, isLoading: isGroupsLoading, isError: isGroupsError} = useGroups()
+    const {data: cases} = useCases()
+    const existingTags = useMemo(
+        () => Array.from(new Set((cases ?? []).flatMap(testCase => testCase.tags ?? []))).sort((a, b) => a.localeCompare(b)),
+        [cases]
+    )
 
     if (isGroupsLoading) {
         return <Spin />
@@ -68,6 +74,7 @@ export const CreateCasePage = () => {
                 <CreateCaseForm
                     loading={createCaseMutation.isPending}
                     groups={groups}
+                    existingTags={existingTags}
                     onSubmit={handleSubmit}
                 />
             </Card>

@@ -1,4 +1,4 @@
-import {Button, Form, Input, Select, Space} from "antd";
+﻿import {Button, Form, Input, Select, Space} from "antd";
 import {MinusCircleOutlined, PlusOutlined} from "@ant-design/icons";
 import type {ICaseCreateRequest} from "../../models/case/case.ts";
 import type {IGroup} from "../../models/case/group.ts";
@@ -18,6 +18,7 @@ interface CreateCaseFormValues {
     description?: string
     preconditions?: string
     postconditions?: string
+    tags?: string[]
     steps: CaseStepFormValue[]
 }
 
@@ -28,10 +29,11 @@ export interface CreateCaseSubmitValues {
 interface CreateCaseFormProps {
     loading?: boolean
     groups: IGroup[]
+    existingTags?: string[]
     onSubmit: (values: CreateCaseSubmitValues) => void
 }
 
-export const CreateCaseForm = ({loading, groups, onSubmit}: CreateCaseFormProps) => {
+export const CreateCaseForm = ({loading, groups, existingTags = [], onSubmit}: CreateCaseFormProps) => {
     const [form] = Form.useForm<CreateCaseFormValues>()
     const groupOptions = buildGroupOptions(groups)
 
@@ -41,6 +43,7 @@ export const CreateCaseForm = ({loading, groups, onSubmit}: CreateCaseFormProps)
             layout="vertical"
             initialValues={{
                 steps: [{title: "Шаг 1", action: "", expectedResult: ""}],
+                tags: [],
             }}
             onFinish={(values) => {
                 onSubmit({
@@ -50,6 +53,7 @@ export const CreateCaseForm = ({loading, groups, onSubmit}: CreateCaseFormProps)
                         description: values.description,
                         preconditions: values.preconditions,
                         postconditions: values.postconditions,
+                        tags: values.tags?.map(tag => tag.trim()).filter(Boolean),
                         steps: (values.steps ?? []).map((step, index) => ({
                             order: index + 1,
                             title: step.title?.trim() || `Шаг ${index + 1}`,
@@ -89,6 +93,16 @@ export const CreateCaseForm = ({loading, groups, onSubmit}: CreateCaseFormProps)
 
             <Form.Item label="Постусловия" name="postconditions">
                 <TextArea rows={4} />
+            </Form.Item>
+
+            <Form.Item label="Теги" name="tags">
+                <Select
+                    mode="tags"
+                    tokenSeparators={[","]}
+                    placeholder="Например: smoke, api, regression"
+                    maxTagCount="responsive"
+                    options={existingTags.map(tag => ({value: tag, label: tag}))}
+                />
             </Form.Item>
 
             <Form.List name="steps">

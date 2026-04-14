@@ -1,8 +1,9 @@
 import {ArrowLeftOutlined} from "@ant-design/icons";
 import {Alert, App, Breadcrumb, Button, Card, Space, Spin, Typography} from "antd";
+import {useMemo} from "react";
 import {Link, useNavigate, useParams} from "react-router";
 import {EditCaseForm, type EditCaseSubmitValues} from "../../components/case/EditCaseForm.tsx";
-import {useCase, useUpdateCase} from "../../hooks/case/caseHooks.ts";
+import {useCase, useCases, useUpdateCase} from "../../hooks/case/caseHooks.ts";
 import {useGroups} from "../../hooks/case/groupHooks.ts";
 
 const {Title} = Typography;
@@ -14,8 +15,13 @@ export const EditCasePage = () => {
     const {message} = App.useApp()
 
     const {data: testCase, isLoading, isError} = useCase(caseId)
+    const {data: cases} = useCases()
     const {data: groups, isLoading: isGroupsLoading, isError: isGroupsError} = useGroups()
     const updateCaseMutation = useUpdateCase()
+    const existingTags = useMemo(
+        () => Array.from(new Set((cases ?? []).flatMap(item => item.tags ?? []))).sort((a, b) => a.localeCompare(b)),
+        [cases]
+    )
 
     if (isLoading) {
         return <Spin />
@@ -86,6 +92,7 @@ export const EditCasePage = () => {
                 <EditCaseForm
                     initialValues={testCase}
                     groups={groups}
+                    existingTags={existingTags}
                     loading={updateCaseMutation.isPending}
                     onSubmit={handleSubmit}
                 />

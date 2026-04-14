@@ -1,4 +1,4 @@
-import {Button, Form, Input, Select, Space} from "antd";
+﻿import {Button, Form, Input, Select, Space} from "antd";
 import {MinusCircleOutlined, PlusOutlined} from "@ant-design/icons";
 import type {ICase, ICaseUpdateRequest} from "../../models/case/case.ts";
 import type {IGroup} from "../../models/case/group.ts";
@@ -18,6 +18,7 @@ interface EditCaseFormValues {
     description?: string
     preconditions?: string
     postconditions?: string
+    tags?: string[]
     steps: CaseStepFormValue[]
 }
 
@@ -28,16 +29,18 @@ export interface EditCaseSubmitValues {
 interface EditCaseFormProps {
     initialValues: ICase
     groups: IGroup[]
+    existingTags?: string[]
     loading?: boolean
     onSubmit: (values: EditCaseSubmitValues) => void
 }
 
 export const EditCaseForm = ({
-                                 initialValues,
-                                 groups,
-                                 loading,
-                                 onSubmit,
-                             }: EditCaseFormProps) => {
+    initialValues,
+    groups,
+    existingTags = [],
+    loading,
+    onSubmit,
+}: EditCaseFormProps) => {
     const [form] = Form.useForm<EditCaseFormValues>()
     const groupOptions = buildGroupOptions(groups)
 
@@ -51,6 +54,7 @@ export const EditCaseForm = ({
                 description: initialValues.description,
                 preconditions: initialValues.preconditions,
                 postconditions: initialValues.postconditions,
+                tags: initialValues.tags ?? [],
                 steps: initialValues.steps?.map(step => ({
                     title: step.title,
                     action: step.action,
@@ -65,9 +69,10 @@ export const EditCaseForm = ({
                         description: values.description,
                         preconditions: values.preconditions,
                         postconditions: values.postconditions,
+                        tags: values.tags?.map(tag => tag.trim()).filter(Boolean),
                         steps: (values.steps ?? []).map((step, index) => ({
                             order: index + 1,
-                            title: `Шаг ${index + 1}`,
+                            title: step.title?.trim() || `Шаг ${index + 1}`,
                             action: step.action?.trim(),
                             expectedResult: step.expectedResult?.trim(),
                         })),
@@ -100,6 +105,16 @@ export const EditCaseForm = ({
 
             <Form.Item label="Постусловия" name="postconditions">
                 <TextArea rows={4} />
+            </Form.Item>
+
+            <Form.Item label="Теги" name="tags">
+                <Select
+                    mode="tags"
+                    tokenSeparators={[","]}
+                    placeholder="Например: smoke, api, regression"
+                    maxTagCount="responsive"
+                    options={existingTags.map(tag => ({value: tag, label: tag}))}
+                />
             </Form.Item>
 
             <Form.List name="steps">
