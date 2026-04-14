@@ -2,6 +2,7 @@ import {Button, Form, Input, Select, Space} from "antd";
 import {MinusCircleOutlined, PlusOutlined} from "@ant-design/icons";
 import type {ICase, ICaseUpdateRequest} from "../../models/case/case.ts";
 import type {IGroup} from "../../models/case/group.ts";
+import {buildGroupOptions} from "../../utils/caseGroupTree.ts";
 
 const {TextArea} = Input;
 
@@ -38,6 +39,7 @@ export const EditCaseForm = ({
                                  onSubmit,
                              }: EditCaseFormProps) => {
     const [form] = Form.useForm<EditCaseFormValues>()
+    const groupOptions = buildGroupOptions(groups)
 
     return (
         <Form
@@ -84,10 +86,7 @@ export const EditCaseForm = ({
             >
                 <Select
                     placeholder="Выберите группу"
-                    options={groups.map(group => ({
-                        value: group.id,
-                        label: group.name ?? `Группа ${group.id}`,
-                    }))}
+                    options={groupOptions}
                 />
             </Form.Item>
 
