@@ -24,8 +24,10 @@ import {Link, useNavigate, useParams} from "react-router";
 import {useCase, useDeleteCase} from "../../hooks/case/caseHooks.ts";
 import {usePlans} from "../../hooks/plan/planHooks.ts";
 import {useCreateRun, useRuns, useRunStatuses} from "../../hooks/run/runHooks.ts";
+import {useAiProviders, useSimilarCases, useSuggestForCase} from "../../hooks/ai/aiHooks.ts";
 import type {IRun} from "../../models/run/run.ts";
 import {getRunExecutorLabel, getRunStatusColor} from "../../utils/runPresentation.ts";
+import {getAiErrorMessage} from "../../utils/aiErrors.ts";
 
 const {Title, Paragraph, Text} = Typography
 
@@ -48,8 +50,11 @@ export const OneCasePage = () => {
     const {data: plans} = usePlans()
     const {data: runs} = useRuns({caseId})
     const {data: runStatuses} = useRunStatuses()
+    const {data: similarCases, isLoading: isSimilarCasesLoading} = useSimilarCases(caseId, 5)
+    const {data: aiProviders, isError: isAiProvidersError} = useAiProviders()
     const deleteCaseMutation = useDeleteCase()
     const createRunMutation = useCreateRun()
+    const suggestForCaseMutation = useSuggestForCase()
 
     const availablePlans = useMemo(() => {
         return (plans ?? []).filter(plan => (plan.cases ?? []).some(testPlanCase => testPlanCase.id === caseId))
@@ -111,6 +116,25 @@ export const OneCasePage = () => {
                     setIsCreateRunModalOpen(false)
                     createRunForm.resetFields()
                     void message.success("Прогон добавлен")
+                },
+            }
+        )
+    }
+
+    const handleAiSuggestion = () => {
+        suggestForCaseMutation.mutate(
+            {
+                caseId,
+                request: {
+                    limit: 5,
+                },
+            },
+            {
+                onError: () => {
+                    void message.error(getAiErrorMessage(
+                        suggestForCaseMutation.error,
+                        "Не удалось получить AI-рекомендации"
+                    ))
                 },
             }
         )
@@ -246,6 +270,66 @@ export const OneCasePage = () => {
                 ) : (
                     <Text type="secondary">Прогонов пока нет</Text>
                 )}
+            </Card>
+
+            <Card
+                title="AI: похожие кейсы и рекомендации"
+                extra={
+                    <Space>
+                        {isAiProvidersError ? (
+                            <Tag color="error">AI: недоступно</Tag>
+                        ) : aiProviders ? (
+                            <Tag color="processing">
+                                AI: {aiProviders.defaultProvider} ({aiProviders.supportedProviders.join(", ")})
+                            </Tag>
+                        ) : (
+                            <Tag>AI: проверка...</Tag>
+                        )}
+
+                        <Button type="primary" loading={suggestForCaseMutation.isPending} onClick={handleAiSuggestion}>
+                            Получить RAG-рекомендацию
+                        </Button>
+                    </Space>
+                }
+            >
+                <Space direction="vertical" size={16} style={{width: "100%"}}>
+                    <div>
+                        <Text strong>Похожие кейсы (векторный поиск)</Text>
+                        <div style={{marginTop: 8}}>
+                            {isSimilarCasesLoading ? (
+                                <Spin size="small" />
+                            ) : similarCases?.length ? (
+                                <Space direction="vertical" size={8} style={{width: "100%"}}>
+                                    {similarCases.map(item => (
+                                        <Card key={item.caseId} size="small">
+                                            <Space direction="vertical" size={4} style={{width: "100%"}}>
+                                                <Text>
+                                                    <Text strong>Case:</Text> <Link to={`/cases/${item.caseId}`}>#{item.caseId}</Link>
+                                                </Text>
+                                                <Text><Text strong>Score:</Text> {item.score.toFixed(3)}</Text>
+                                            </Space>
+                                        </Card>
+                                    ))}
+                                </Space>
+                            ) : (
+                                <Text type="secondary">Похожих кейсов пока не найдено</Text>
+                            )}
+                        </div>
+                    </div>
+
+                    <div>
+                        <Text strong>RAG-рекомендация</Text>
+                        <div style={{marginTop: 8}}>
+                            {suggestForCaseMutation.isSuccess ? (
+                                <Typography.Paragraph style={{whiteSpace: "pre-wrap", marginBottom: 0}}>
+                                    {suggestForCaseMutation.data.answer}
+                                </Typography.Paragraph>
+                            ) : (
+                                <Text type="secondary">Нажмите "Получить RAG-рекомендацию"</Text>
+                            )}
+                        </div>
+                    </div>
+                </Space>
             </Card>
 
             <Modal

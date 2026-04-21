@@ -8,6 +8,7 @@ export interface IPlan {
     approach: string
     startDate: string
     endDate: string
+    projectId?: number
     responsibleUser?: IUserCompact
     createdAt: string
     cases?: ICaseCompact[]
@@ -20,6 +21,7 @@ export interface IPlanCreateRequest {
     startDate: string
     endDate: string
     responsibleUserId?: number
+    projectId?: number
 }
 
 export interface IPlanUpdateRequest {
@@ -29,4 +31,5 @@ export interface IPlanUpdateRequest {
     startDate?: string
     endDate?: string
     responsibleUserId?: number
+    projectId?: number
 }
