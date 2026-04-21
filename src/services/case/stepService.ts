@@ -7,7 +7,7 @@ export default {
         return response.data
     },
 
-    create: async (caseId: number, request: IStepCreateRequest): Promise<IStep[]> => {
+    create: async (caseId: number, request: IStepCreateRequest[]): Promise<IStep[]> => {
         const response = await api.post<IStep[]>(`/case/${caseId}/steps`, request)
         return response.data
     },

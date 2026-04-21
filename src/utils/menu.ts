@@ -4,7 +4,8 @@ import {
     FileTextOutlined,
     RocketOutlined,
     UserOutlined,
-    PieChartOutlined
+    PieChartOutlined,
+    TeamOutlined
 } from '@ant-design/icons';
 
 export const navigationTopItems = [
@@ -32,6 +33,11 @@ export const navigationTopItems = [
         key: '/defects',
         label: 'Дефекты',
         icon: AlertOutlined,
+    },
+    {
+        key: '/users',
+        label: 'Пользователи',
+        icon: TeamOutlined,
     },
 ]
 

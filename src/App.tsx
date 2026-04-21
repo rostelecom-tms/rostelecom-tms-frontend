@@ -16,6 +16,8 @@ import {CreateCasePage} from "./pages/case/CreateCasePage.tsx";
 import {EditCasePage} from "./pages/case/EditCasePage.tsx";
 import {DefectsListPage} from "./pages/defect/DefectsListPage.tsx";
 import {RunsListPage} from "./pages/run/RunsListPage.tsx";
+import {UsersListPage} from "./pages/user/UsersListPage.tsx";
+import {UserPage} from "./pages/user/UserPage.tsx";
 
 const queryClient = new QueryClient()
 
@@ -41,6 +43,8 @@ export const App = () => {
                             <Route path="/cases/:id/edit" element={<EditCasePage />} />
                             <Route path="/runs" element={<RunsListPage />} />
                             <Route path="/defects" element={<DefectsListPage />} />
+                            <Route path="/users" element={<UsersListPage />} />
+                            <Route path="/account" element={<UserPage />} />
                             <Route path="*" element={<Navigate to="/dashboard" replace />} />
                         </Route>
                     </Route>
