@@ -4,7 +4,7 @@ import type {ColumnsType} from "antd/es/table";
 import Title from "antd/lib/typography/Title";
 import {useCases} from "../../hooks/case/caseHooks.ts";
 import {useCreateDefect, useDefects, useUpdateDefect} from "../../hooks/case/defectHooks.ts";
-import {useAiProviders, useAnalyzeDefect, useSimilarDefects, useSuggestByText} from "../../hooks/ai/aiHooks.ts";
+import {useAiProviders, useAnalyzeLogs, useSimilarDefects} from "../../hooks/ai/aiHooks.ts";
 import type {IDefect, IDefectCreateRequest} from "../../models/case/defect.ts";
 import {getAiErrorMessage} from "../../utils/aiErrors.ts";
 
@@ -27,21 +27,31 @@ export const DefectsListPage = () => {
     const {data: cases, isLoading: isCasesLoading, isError: isCasesError} = useCases();
     const createDefectMutation = useCreateDefect();
     const updateDefectMutation = useUpdateDefect();
-    const analyzeDefectMutation = useAnalyzeDefect();
-    const analyzeLogsMutation = useSuggestByText();
+    const analyzeLogsMutation = useAnalyzeLogs();
     const {data: aiProviders, isError: isAiProvidersError} = useAiProviders();
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     const [selectedDefect, setSelectedDefect] = useState<IDefect | null>(null);
     const [onlySolvedForSimilar, setOnlySolvedForSimilar] = useState(false);
+    const [isSimilarSearchRun, setIsSimilarSearchRun] = useState(false);
     const [createForm] = Form.useForm<CreateDefectFormValues>();
     const [logsForm] = Form.useForm<AnalyzeLogsFormValues>();
 
-    const {data: similarDefects, isLoading: isSimilarLoading} = useSimilarDefects(selectedDefect?.id, {
-        limit: 5,
-        onlySolved: onlySolvedForSimilar,
-    });
+    const {
+        data: similarDefects,
+        isFetching: isSimilarLoading,
+        refetch: refetchSimilarDefects,
+    } = useSimilarDefects(
+        selectedDefect?.id,
+        {
+            limit: 5,
+            onlySolved: onlySolvedForSimilar,
+        },
+        {
+            enabled: false,
+        }
+    );
 
     const caseOptions = useMemo(
         () => (cases ?? []).map(testCase => ({
@@ -119,8 +129,8 @@ export const DefectsListPage = () => {
                     onClick={() => {
                         setSelectedDefect(record);
                         setOnlySolvedForSimilar(false);
+                        setIsSimilarSearchRun(false);
                         logsForm.resetFields();
-                        analyzeDefectMutation.reset();
                         analyzeLogsMutation.reset();
                         setIsAiModalOpen(true);
                     }}
@@ -136,28 +146,16 @@ export const DefectsListPage = () => {
         setIsCreateModalOpen(true);
     };
 
-    const runAiDefectAnalysis = () => {
+    const runSimilarSearch = async () => {
         if (!selectedDefect) {
             return;
         }
 
-        analyzeDefectMutation.mutate(
-            {
-                defectId: selectedDefect.id,
-                request: {
-                    limit: 5,
-                    onlySolved: onlySolvedForSimilar,
-                },
-            },
-            {
-                onError: () => {
-                    message.error(getAiErrorMessage(
-                        analyzeDefectMutation.error,
-                        "Не удалось выполнить AI-анализ дефекта"
-                    ));
-                },
-            }
-        );
+        setIsSimilarSearchRun(true);
+        const result = await refetchSimilarDefects();
+        if (result.error) {
+            message.error(getAiErrorMessage(result.error, "Не удалось выполнить векторный поиск"));
+        }
     };
 
     const runAiLogsAnalysis = (values: AnalyzeLogsFormValues) => {
@@ -183,8 +181,7 @@ export const DefectsListPage = () => {
 
         analyzeLogsMutation.mutate(
             {
-                q: prompt,
-                limit: 5,
+                prompt,
             },
             {
                 onError: () => {
@@ -323,16 +320,26 @@ export const DefectsListPage = () => {
                             size="small"
                             title="Похожие дефекты (векторный поиск)"
                             extra={
-                                <Checkbox
-                                    checked={onlySolvedForSimilar}
-                                    onChange={(event) => setOnlySolvedForSimilar(event.target.checked)}
-                                >
-                                    Только решенные
-                                </Checkbox>
+                                <Space>
+                                    <Checkbox
+                                        checked={onlySolvedForSimilar}
+                                        onChange={(event) => {
+                                            setOnlySolvedForSimilar(event.target.checked);
+                                            setIsSimilarSearchRun(false);
+                                        }}
+                                    >
+                                        Только решенные
+                                    </Checkbox>
+                                    <Button type="primary" onClick={runSimilarSearch} loading={isSimilarLoading}>
+                                        Найти
+                                    </Button>
+                                </Space>
                             }
                         >
                             {isSimilarLoading ? (
                                 <Spin />
+                            ) : !isSimilarSearchRun ? (
+                                <Text type="secondary">Нажмите "Найти" для векторного поиска</Text>
                             ) : similarDefects?.length ? (
                                 <Space direction="vertical" size={8} style={{width: "100%"}}>
                                     {similarDefects.map(item => (
@@ -348,24 +355,6 @@ export const DefectsListPage = () => {
                                 </Space>
                             ) : (
                                 <Text type="secondary">Похожих дефектов пока не найдено</Text>
-                            )}
-                        </Card>
-
-                        <Card
-                            size="small"
-                            title="AI-анализ дефекта"
-                            extra={
-                                <Button type="primary" loading={analyzeDefectMutation.isPending} onClick={runAiDefectAnalysis}>
-                                    Запустить анализ
-                                </Button>
-                            }
-                        >
-                            {analyzeDefectMutation.isSuccess ? (
-                                <Typography.Paragraph style={{whiteSpace: "pre-wrap", marginBottom: 0}}>
-                                    {analyzeDefectMutation.data.answer}
-                                </Typography.Paragraph>
-                            ) : (
-                                <Text type="secondary">Нажмите "Запустить анализ"</Text>
                             )}
                         </Card>
 

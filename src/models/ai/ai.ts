@@ -42,3 +42,12 @@ export interface ICaseRagSuggestion {
     relatedCaseIds: number[]
     answer: string
 }
+
+export interface ILogsAnalysisRequest {
+    prompt: string
+    llmProvider?: string
+}
+
+export interface ILogsAnalysisResponse {
+    answer: string
+}
