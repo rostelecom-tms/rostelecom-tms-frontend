@@ -5,6 +5,8 @@ import type {
     ICaseSuggestRequest,
     IDefectAnalysisRequest,
     IDefectRagAnalysis,
+    ILogsAnalysisRequest,
+    ILogsAnalysisResponse,
     IProviderInfo,
     ISimilarCaseResult,
     ISimilarDefectResult,
@@ -92,6 +94,14 @@ export default {
             q: request.q,
             limit: request.limit ?? 5,
             embeddingProvider: request.embeddingProvider,
+            llmProvider: request.llmProvider,
+        })
+        return response.data
+    },
+
+    analyzeLogs: async (request: ILogsAnalysisRequest): Promise<ILogsAnalysisResponse> => {
+        const response = await api.post<ILogsAnalysisResponse>(`/rag/logs/analysis`, {
+            prompt: request.prompt,
             llmProvider: request.llmProvider,
         })
         return response.data

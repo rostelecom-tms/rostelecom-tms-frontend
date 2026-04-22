@@ -1,6 +1,11 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import aiService from "../../services/ai/aiService.ts";
-import type {ICaseSuggestByTextRequest, ICaseSuggestRequest, IDefectAnalysisRequest} from "../../models/ai/ai.ts";
+import type {
+    ICaseSuggestByTextRequest,
+    ICaseSuggestRequest,
+    IDefectAnalysisRequest,
+    ILogsAnalysisRequest,
+} from "../../models/ai/ai.ts";
 
 export const useAiProviders = () => {
     return useQuery({
@@ -21,12 +26,13 @@ export const useSimilarCases = (caseId?: number, limit = 5, provider?: string) =
 
 export const useSimilarDefects = (
     defectId?: number,
-    params?: {limit?: number; onlySolved?: boolean; provider?: string}
+    params?: {limit?: number; onlySolved?: boolean; provider?: string},
+    options?: {enabled?: boolean}
 ) => {
     return useQuery({
         queryKey: ["ai", "similar-defects", defectId, params ?? {}],
         queryFn: () => aiService.similarDefectsById(defectId!, params),
-        enabled: Number.isFinite(defectId) && (defectId ?? 0) > 0,
+        enabled: (options?.enabled ?? true) && Number.isFinite(defectId) && (defectId ?? 0) > 0,
         retry: false,
     })
 }
@@ -48,6 +54,12 @@ export const useSuggestForCase = () => {
 export const useSuggestByText = () => {
     return useMutation({
         mutationFn: (request: ICaseSuggestByTextRequest) => aiService.suggestByText(request),
+    })
+}
+
+export const useAnalyzeLogs = () => {
+    return useMutation({
+        mutationFn: (request: ILogsAnalysisRequest) => aiService.analyzeLogs(request),
     })
 }
 
