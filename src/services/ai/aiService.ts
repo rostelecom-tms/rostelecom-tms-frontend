@@ -5,6 +5,7 @@ import type {
     ICaseSuggestRequest,
     IDefectAnalysisRequest,
     IDefectRagAnalysis,
+    ILogsAnalysisHistoryItem,
     ILogsAnalysisRequest,
     ILogsAnalysisResponse,
     IProviderInfo,
@@ -101,8 +102,18 @@ export default {
 
     analyzeLogs: async (request: ILogsAnalysisRequest): Promise<ILogsAnalysisResponse> => {
         const response = await api.post<ILogsAnalysisResponse>(`/rag/logs/analysis`, {
+            defectId: request.defectId,
             prompt: request.prompt,
             llmProvider: request.llmProvider,
+            llmModel: request.llmModel,
+            saveHistory: request.saveHistory ?? true,
+        })
+        return response.data
+    },
+
+    logsHistory: async (defectId: number): Promise<ILogsAnalysisHistoryItem[]> => {
+        const response = await api.get<ILogsAnalysisHistoryItem[]>(`/rag/logs/history`, {
+            params: {defectId},
         })
         return response.data
     },
