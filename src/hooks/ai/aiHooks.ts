@@ -63,6 +63,15 @@ export const useAnalyzeLogs = () => {
     })
 }
 
+export const useLogsAnalysisHistory = (defectId?: number) => {
+    return useQuery({
+        queryKey: ["ai", "logs-history", defectId],
+        queryFn: () => aiService.logsHistory(defectId!),
+        enabled: Number.isFinite(defectId) && (defectId ?? 0) > 0,
+        retry: false,
+    })
+}
+
 export const useReindexAllCases = () => {
     const queryClient = useQueryClient()
     return useMutation({
