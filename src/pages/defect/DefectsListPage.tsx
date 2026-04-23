@@ -4,7 +4,7 @@ import type {ColumnsType} from "antd/es/table";
 import Title from "antd/lib/typography/Title";
 import {useCases} from "../../hooks/case/caseHooks.ts";
 import {useCreateDefect, useDefects, useUpdateDefect} from "../../hooks/case/defectHooks.ts";
-import {useAiProviders, useAnalyzeLogs, useSimilarDefects} from "../../hooks/ai/aiHooks.ts";
+import {useAiProviders, useAnalyzeLogs, useLogsAnalysisHistory, useSimilarDefects} from "../../hooks/ai/aiHooks.ts";
 import type {IDefect, IDefectCreateRequest} from "../../models/case/defect.ts";
 import {getAiErrorMessage} from "../../utils/aiErrors.ts";
 
@@ -19,6 +19,8 @@ interface CreateDefectFormValues {
 
 interface AnalyzeLogsFormValues {
     logs: string;
+    llmOption?: string;
+    saveHistory?: boolean;
 }
 
 export const DefectsListPage = () => {
@@ -37,6 +39,12 @@ export const DefectsListPage = () => {
     const [isSimilarSearchRun, setIsSimilarSearchRun] = useState(false);
     const [createForm] = Form.useForm<CreateDefectFormValues>();
     const [logsForm] = Form.useForm<AnalyzeLogsFormValues>();
+
+    const {
+        data: logsHistory,
+        isLoading: isLogsHistoryLoading,
+        refetch: refetchLogsHistory,
+    } = useLogsAnalysisHistory(selectedDefect?.id);
 
     const {
         data: similarDefects,
@@ -60,6 +68,8 @@ export const DefectsListPage = () => {
         })),
         [cases]
     );
+
+    const defaultLlmOption = `${aiProviders?.defaultProvider ?? "ollama"}|qwen3:4b`;
 
     const columns: ColumnsType<IDefect> = [
         {
@@ -130,8 +140,12 @@ export const DefectsListPage = () => {
                         setSelectedDefect(record);
                         setOnlySolvedForSimilar(false);
                         setIsSimilarSearchRun(false);
-                        logsForm.resetFields();
+                        logsForm.setFieldsValue({
+                            llmOption: defaultLlmOption,
+                            saveHistory: true,
+                        });
                         analyzeLogsMutation.reset();
+                        void refetchLogsHistory();
                         setIsAiModalOpen(true);
                     }}
                 >
@@ -179,11 +193,20 @@ export const DefectsListPage = () => {
             .filter(Boolean)
             .join("\n\n");
 
+        const [llmProvider, llmModel] = (values.llmOption ?? defaultLlmOption).split("|");
+
         analyzeLogsMutation.mutate(
             {
+                defectId: selectedDefect.id,
                 prompt,
+                llmProvider: llmProvider || undefined,
+                llmModel: llmModel?.trim() || undefined,
+                saveHistory: values.saveHistory ?? true,
             },
             {
+                onSuccess: () => {
+                    void refetchLogsHistory();
+                },
                 onError: () => {
                     message.error(getAiErrorMessage(
                         analyzeLogsMutation.error,
@@ -361,12 +384,34 @@ export const DefectsListPage = () => {
                         <Card size="small" title="AI-анализ логов">
                             <Form form={logsForm} layout="vertical" onFinish={runAiLogsAnalysis}>
                                 <Form.Item
+                                    label="LLM"
+                                    name="llmOption"
+                                    initialValue={defaultLlmOption}
+                                    rules={[{required: true, message: "Выберите LLM"}]}
+                                >
+                                    <Select
+                                        placeholder="Выберите LLM"
+                                        options={[
+                                            {
+                                                value: defaultLlmOption,
+                                                label: "qwen3:4b",
+                                            },
+                                        ]}
+                                    />
+                                </Form.Item>
+
+                                <Form.Item
                                     label="Логи / stacktrace"
                                     name="logs"
                                     rules={[{required: true, message: "Вставьте текст логов"}]}
                                 >
                                     <TextArea rows={8} placeholder="Вставьте фрагмент логов для анализа" />
                                 </Form.Item>
+
+                                <Form.Item name="saveHistory" valuePropName="checked" initialValue={true}>
+                                    <Checkbox>Сохранять логи и результат анализа</Checkbox>
+                                </Form.Item>
+
                                 <Space>
                                     <Button type="primary" htmlType="submit" loading={analyzeLogsMutation.isPending}>
                                         Анализировать логи
@@ -378,6 +423,35 @@ export const DefectsListPage = () => {
                                 <Typography.Paragraph style={{whiteSpace: "pre-wrap", marginTop: 12, marginBottom: 0}}>
                                     {analyzeLogsMutation.data.answer}
                                 </Typography.Paragraph>
+                            )}
+                        </Card>
+
+                        <Card size="small" title="История AI-анализов логов">
+                            {isLogsHistoryLoading ? (
+                                <Spin />
+                            ) : logsHistory?.length ? (
+                                <Space direction="vertical" size={8} style={{width: "100%"}}>
+                                    {logsHistory.map(item => (
+                                        <Card key={item.id} size="small">
+                                            <Space direction="vertical" size={6} style={{width: "100%"}}>
+                                                <Text type="secondary">
+                                                    {new Date(item.createdAt).toLocaleString("ru-RU")}
+                                                    {item.llmModel ? ` • ${item.llmModel}` : ""}
+                                                </Text>
+                                                <Text strong>Логи</Text>
+                                                <Typography.Paragraph style={{whiteSpace: "pre-wrap", marginBottom: 0}}>
+                                                    {item.logs}
+                                                </Typography.Paragraph>
+                                                <Text strong>Ответ AI</Text>
+                                                <Typography.Paragraph style={{whiteSpace: "pre-wrap", marginBottom: 0}}>
+                                                    {item.answer}
+                                                </Typography.Paragraph>
+                                            </Space>
+                                        </Card>
+                                    ))}
+                                </Space>
+                            ) : (
+                                <Text type="secondary">История пока пустая</Text>
                             )}
                         </Card>
                     </Space>

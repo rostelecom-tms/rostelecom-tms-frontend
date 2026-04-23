@@ -44,10 +44,23 @@ export interface ICaseRagSuggestion {
 }
 
 export interface ILogsAnalysisRequest {
+    defectId: number
     prompt: string
     llmProvider?: string
+    llmModel?: string
+    saveHistory?: boolean
 }
 
 export interface ILogsAnalysisResponse {
     answer: string
+}
+
+export interface ILogsAnalysisHistoryItem {
+    id: number
+    defectId: number
+    logs: string
+    answer: string
+    llmProvider?: string
+    llmModel?: string
+    createdAt: string
 }
