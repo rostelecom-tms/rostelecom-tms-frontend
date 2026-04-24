@@ -3,6 +3,7 @@ import dayjs, {type Dayjs} from "dayjs";
 import {useUsers} from "../../hooks/user/userHooks.ts";
 import {useCases} from "../../hooks/case/caseHooks.ts";
 import type {IPlan, IPlanUpdateRequest} from "../../models/plan/plan.ts";
+import {useMe} from "../../hooks/user/userHooks.ts";
 
 const {TextArea} = Input;
 
@@ -33,10 +34,12 @@ export const EditPlanForm = ({
                                  onSubmit,
                              }: EditPlanFormProps) => {
     const [form] = Form.useForm<EditPlanFormValues>()
+    const {data: me, isLoading: isMeLoading} = useMe()
     const {data: users, isLoading: isUsersLoading} = useUsers()
     const {data: cases, isLoading: isCasesLoading} = useCases()
+    const isAdmin = me?.role?.slug === "admin"
 
-    if (isUsersLoading || isCasesLoading) {
+    if (isMeLoading || isUsersLoading || isCasesLoading) {
         return <Spin />
     }
 
@@ -61,7 +64,7 @@ export const EditPlanForm = ({
                         approach: values.approach,
                         startDate: values.startDate?.format("YYYY-MM-DD"),
                         endDate: values.endDate?.format("YYYY-MM-DD"),
-                        responsibleUserId: values.responsibleUserId,
+                        responsibleUserId: isAdmin ? values.responsibleUserId : undefined,
                     },
                     caseIds: values.caseIds ?? [],
                 })
@@ -87,21 +90,23 @@ export const EditPlanForm = ({
                 <DatePicker showTime={{format: "HH:mm"}} format="DD.MM.YYYY HH:mm" style={{width: "100%"}} />
             </Form.Item>
 
-            <Form.Item label="Ответственный" name="responsibleUserId">
-                <Select
-                    placeholder="Выберите пользователя"
-                    options={(users ?? []).map(user => ({
-                        value: user.id,
-                        label: user.username
-                            ? `${user.username} (${user.email})`
-                            : user.email,
-                    }))}
-                    showSearch={{
-                        optionFilterProp: "label",
-                    }}
-                    allowClear
-                />
-            </Form.Item>
+            {isAdmin && (
+                <Form.Item label="Ответственный" name="responsibleUserId">
+                    <Select
+                        placeholder="Выберите пользователя"
+                        options={(users ?? []).map(user => ({
+                            value: user.id,
+                            label: user.username
+                                ? `${user.username} (${user.email})`
+                                : user.email,
+                        }))}
+                        showSearch={{
+                            optionFilterProp: "label",
+                        }}
+                        allowClear
+                    />
+                </Form.Item>
+            )}
 
             <Form.Item label="Тест-кейсы" name="caseIds">
                 <Select

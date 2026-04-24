@@ -25,7 +25,7 @@ export const UserPage = () => {
                 <Descriptions.Item label="Роль">
                     <Tag>{me.role.name} ({me.role.slug})</Tag>
                 </Descriptions.Item>
-                <Descriptions.Item label="Создание планов">
+                <Descriptions.Item label="Создание проектов">
                     {me.canCreatePlans ? <Tag color="success">Разрешено</Tag> : <Tag>Не разрешено</Tag>}
                 </Descriptions.Item>
                 <Descriptions.Item label="Создан">
