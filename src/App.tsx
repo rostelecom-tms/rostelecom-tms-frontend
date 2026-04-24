@@ -18,6 +18,7 @@ import {DefectsListPage} from "./pages/defect/DefectsListPage.tsx";
 import {RunsListPage} from "./pages/run/RunsListPage.tsx";
 import {UsersListPage} from "./pages/user/UsersListPage.tsx";
 import {UserPage} from "./pages/user/UserPage.tsx";
+import {ProjectsListPage} from "./pages/project/ProjectsListPage.tsx";
 
 const queryClient = new QueryClient()
 
@@ -37,6 +38,7 @@ export const App = () => {
                             <Route path="/plans/create" element={<CreatePlanPage />} />
                             <Route path="/plans/:id" element={<OnePlanPage />} />
                             <Route path="/plans/:id/edit" element={<EditPlanPage />} />
+                            <Route path="/projects" element={<ProjectsListPage />} />
                             <Route path="/cases" element={<CasesListPage />} />
                             <Route path="/cases/create" element={<CreateCasePage />} />
                             <Route path="/cases/:id" element={<OneCasePage />} />

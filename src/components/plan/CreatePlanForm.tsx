@@ -3,6 +3,7 @@ import {type Dayjs} from "dayjs";
 import {useUsers} from "../../hooks/user/userHooks.ts";
 import {useCases} from "../../hooks/case/caseHooks.ts";
 import type {IPlanCreateRequest} from "../../models/plan/plan.ts";
+import {useMe} from "../../hooks/user/userHooks.ts";
 
 const {TextArea} = Input;
 
@@ -28,10 +29,12 @@ interface CreatePlanFormProps {
 
 export const CreatePlanForm = ({loading, onSubmit}: CreatePlanFormProps) => {
     const [form] = Form.useForm<CreatePlanFormValues>()
+    const {data: me, isLoading: isMeLoading} = useMe()
     const {data: users, isLoading: isUsersLoading} = useUsers()
     const {data: cases, isLoading: isCasesLoading} = useCases()
+    const isAdmin = me?.role?.slug === "admin"
 
-    if (isUsersLoading || isCasesLoading) {
+    if (isMeLoading || isUsersLoading || isCasesLoading) {
         return <Spin />
     }
 
@@ -50,7 +53,7 @@ export const CreatePlanForm = ({loading, onSubmit}: CreatePlanFormProps) => {
                         approach: values.approach,
                         startDate: values.startDate.format("YYYY-MM-DD"),
                         endDate: values.endDate.format("YYYY-MM-DD"),
-                        responsibleUserId: values.responsibleUserId!,
+                        responsibleUserId: isAdmin ? values.responsibleUserId : undefined,
                     },
                     caseIds: values.caseIds ?? [],
                 })
@@ -96,23 +99,25 @@ export const CreatePlanForm = ({loading, onSubmit}: CreatePlanFormProps) => {
                 <DatePicker showTime={{format: "HH:mm"}} format="DD.MM.YYYY HH:mm" style={{width: "100%"}} />
             </Form.Item>
 
-            <Form.Item
-                label="Ответственный"
-                name="responsibleUserId"
-                rules={[{required: true, message: "Выберите ответственного"}]}
-            >
-                <Select
-                    placeholder="Выберите пользователя"
-                    options={(users ?? []).map(user => ({
-                        value: user.id,
-                        label: user.username
-                            ? `${user.username} (${user.email})`
-                            : user.email,
-                    }))}
-                    showSearch
-                    optionFilterProp="label"
-                />
-            </Form.Item>
+            {isAdmin && (
+                <Form.Item
+                    label="Ответственный"
+                    name="responsibleUserId"
+                    rules={[{required: true, message: "Выберите ответственного"}]}
+                >
+                    <Select
+                        placeholder="Выберите пользователя"
+                        options={(users ?? []).map(user => ({
+                            value: user.id,
+                            label: user.username
+                                ? `${user.username} (${user.email})`
+                                : user.email,
+                        }))}
+                        showSearch
+                        optionFilterProp="label"
+                    />
+                </Form.Item>
+            )}
 
             <Form.Item
                 label="Тест-кейсы"
