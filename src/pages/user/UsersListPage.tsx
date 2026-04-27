@@ -1,7 +1,16 @@
 import {Alert, App, Button, Card, Form, Input, Modal, Popconfirm, Select, Space, Spin, Switch, Table, Tag, Typography} from "antd";
 import type {ColumnsType} from "antd/es/table";
 import {useMemo, useState} from "react";
-import {useDeleteUser, useMe, useUsers, useCreateUser, useUpdateUser} from "../../hooks/user/userHooks.ts";
+import {
+    useDeleteUser,
+    useMe,
+    useUsers,
+    useCreateUser,
+    useUpdateUser,
+    useRegistrationRequests,
+    useApproveRegistration,
+    useRejectRegistration
+} from "../../hooks/user/userHooks.ts";
 import {useRoles} from "../../hooks/user/roleHooks.ts";
 import {
     useAddProjectMember,
@@ -12,7 +21,7 @@ import {
     useRemoveProjectMember
 } from "../../hooks/project/projectHooks.ts";
 import type {IProjectAccessRequest} from "../../models/project/project.ts";
-import type {IUser} from "../../models/user/user.ts";
+import type {IUser, IRegistrationRequest} from "../../models/user/user.ts";
 
 const {Title, Text} = Typography
 
@@ -60,6 +69,10 @@ export const UsersListPage = () => {
         isLoading: isProjectAccessRequestsLoading,
         isError: isProjectAccessRequestsError,
     } = useProjectAccessRequestInbox(canReviewRequests)
+
+    const { data: regRequests, isLoading: isRegLoading } = useRegistrationRequests(canReviewRequests)
+    const approveRegMutation = useApproveRegistration()
+    const rejectRegMutation = useRejectRegistration()
 
     const roleOptions = useMemo(() => {
         return (roles ?? []).map(role => ({
@@ -436,6 +449,36 @@ export const UsersListPage = () => {
         },
     ]
 
+    const regColumns: ColumnsType<IRegistrationRequest> = [
+        { title: "ID", dataIndex: "id", key: "id", width: 90 },
+        { title: "Email", dataIndex: "email", key: "email" },
+        { title: "Имя", dataIndex: "username", key: "username" },
+        {
+            title: "Проект",
+            key: "project",
+            render: (_, rec) => rec.projectId ? `${rec.projectName || 'Неизвестен'} (#${rec.projectId})` : <Tag>Без проекта</Tag>
+        },
+        {
+            title: "Действия",
+            key: "actions",
+            width: 230,
+            render: (_, rec) => (
+                <Space>
+                    <Button
+                        type="primary"
+                        onClick={() => approveRegMutation.mutate(rec.id)}
+                        loading={approveRegMutation.isPending}
+                    >Одобрить</Button>
+                    <Button
+                        danger
+                        onClick={() => rejectRegMutation.mutate(rec.id)}
+                        loading={rejectRegMutation.isPending}
+                    >Отклонить</Button>
+                </Space>
+            )
+        }
+    ]
+
     return (
         <>
             <Card>
@@ -580,11 +623,13 @@ export const UsersListPage = () => {
 
             {canReviewRequests && (
                 <Card title="Заявки на регистрацию" style={{marginTop: 16}}>
-                    <Alert
-                        type="info"
-                        showIcon
-                        message="Заглушка"
-                        description="Блок заявок на регистрацию будет реализован отдельно."
+                    <Table<IRegistrationRequest>
+                        rowKey="id"
+                        columns={regColumns}
+                        dataSource={Array.isArray(regRequests) ? regRequests : []}
+                        loading={isRegLoading}
+                        locale={{emptyText: "Нет новых заявок"}}
+                        pagination={{pageSize: 8}}
                     />
                 </Card>
             )}

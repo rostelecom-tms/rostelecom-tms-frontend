@@ -1,6 +1,6 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import userService from "../../services/user/userService.ts";
-import type {IUserCreateRequest, IUserUpdateRequest} from "../../models/user/user.ts";
+import type {IUserCreateRequest, IUserUpdateRequest, IRegistrationRequest} from "../../models/user/user.ts";
 
 export const useUsers = () => {
     return useQuery({
@@ -54,3 +54,33 @@ export const useDeleteUser = () => {
     })
 }
 
+export const useRegistrationRequests = (enabled: boolean) => {
+    return useQuery<IRegistrationRequest[]>({
+        queryKey: ['registration-requests'],
+        queryFn: userService.registrationRequests,
+        enabled: enabled,
+        retry: false
+    })
+}
+
+export const useApproveRegistration = () => {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: (id: number) => userService.approveRegistration(id),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({queryKey: ['registration-requests']})
+            void queryClient.invalidateQueries({queryKey: ['users']})
+            void queryClient.invalidateQueries({queryKey: ['projects']})
+        },
+    })
+}
+
+export const useRejectRegistration = () => {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: (id: number) => userService.rejectRegistration(id),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({queryKey: ['registration-requests']})
+        },
+    })
+}

@@ -3,7 +3,9 @@ import type {
     IUserCreateRequest,
     IUserLoginRequest,
     IUserLoginResponse,
-    IUserUpdateRequest
+    IUserUpdateRequest,
+    IUserRegistrationRequest,
+    IRegistrationRequest
 } from "../../models/user/user.ts";
 import {api} from "../axios.ts";
 
@@ -16,6 +18,10 @@ export default {
     login: async (credentials: IUserLoginRequest): Promise<void> => {
         const response = await api.post<IUserLoginResponse>(`/auth/login`, credentials)
         localStorage.setItem('accessToken', response.data.accessToken)
+    },
+
+    register: async (request: IUserRegistrationRequest): Promise<void> => {
+        await api.post(`/auth/register`, request)
     },
 
     list: async (): Promise<IUser[]> => {
@@ -33,5 +39,18 @@ export default {
 
     delete: async (id: number): Promise<void> => {
         await api.delete<void>(`/users/${id}`)
+    },
+
+    registrationRequests: async (): Promise<IRegistrationRequest[]> => {
+        const response = await api.get<IRegistrationRequest[]>(`/users/registration-requests`)
+        return response.data
+    },
+
+    approveRegistration: async (requestId: number): Promise<void> => {
+        await api.post(`/users/registration-requests/${requestId}/approve`)
+    },
+
+    rejectRegistration: async (requestId: number): Promise<void> => {
+        await api.post(`/users/registration-requests/${requestId}/reject`)
     }
 }
