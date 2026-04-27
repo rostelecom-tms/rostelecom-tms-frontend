@@ -1,25 +1,22 @@
-import { Button, Card, Form, Input, Typography } from 'antd'
+import { Button, Card, Form, Input, InputNumber, Typography, App } from 'antd'
+import { useNavigate } from "react-router";
 import userService from "../../services/user/userService.ts";
-import type {IUserLoginRequest} from "../../models/user/user.ts";
-import {Navigate, useNavigate} from "react-router";
-import {useMe} from "../../hooks/user/userHooks.ts";
+import type { IUserRegistrationRequest } from "../../models/user/user.ts";
 
 const { Title, Text } = Typography
 
-export const LoginPage = () => {
+export const RegisterPage = () => {
     const navigate = useNavigate()
+    const { message } = App.useApp()
 
-    const { data: me, isLoading } = useMe()
-
-    if (isLoading) return <div/>
-
-    if (me) {
-        return <Navigate to={'/dashboard'} replace/>
-    }
-
-    const onFinish = async (credentials: IUserLoginRequest) => {
-        await userService.login(credentials)
-        navigate(`/dashboard`, {replace: true})
+    const onFinish = async (values: IUserRegistrationRequest) => {
+        try {
+            await userService.register(values)
+            message.success('Заявка на регистрацию отправлена! Ожидайте одобрения.')
+            navigate('/login')
+        } catch (e) {
+            message.error('Ошибка при регистрации')
+        }
     }
 
     return (
@@ -34,7 +31,7 @@ export const LoginPage = () => {
         >
             <Card style={{ width: 400 }}>
                 <Title level={2} style={{ textAlign: 'center', marginBottom: 8 }}>
-                    Вход
+                    Регистрация
                 </Title>
 
                 <Text
@@ -45,10 +42,10 @@ export const LoginPage = () => {
                         marginBottom: 24,
                     }}
                 >
-                    Введите email и пароль
+                    Заполните данные для заявки
                 </Text>
 
-                <Form<IUserLoginRequest>
+                <Form<IUserRegistrationRequest>
                     layout="vertical"
                     onFinish={onFinish}
                     autoComplete="off"
@@ -65,6 +62,14 @@ export const LoginPage = () => {
                     </Form.Item>
 
                     <Form.Item
+                        label="Имя пользователя"
+                        name="username"
+                        rules={[{ required: true, message: 'Введите имя пользователя' }]}
+                    >
+                        <Input placeholder="username" />
+                    </Form.Item>
+
+                    <Form.Item
                         label="Пароль"
                         name="password"
                         rules={[
@@ -75,12 +80,20 @@ export const LoginPage = () => {
                         <Input.Password placeholder="Введите пароль" />
                     </Form.Item>
 
+                    <Form.Item
+                        label="ID Проекта (опционально)"
+                        name="projectId"
+                        help="Если указать ID, заявка попадет тимлиду проекта"
+                    >
+                        <InputNumber style={{ width: '100%' }} placeholder="Например: 12" />
+                    </Form.Item>
+
                     <Form.Item style={{ marginBottom: 0 }}>
                         <Button type="primary" htmlType="submit" block>
-                            Войти
+                            Зарегистрироваться
                         </Button>
-                        <Button type="link" block onClick={() => navigate('/register')} style={{ marginTop: 8 }}>
-                            Нет аккаунта? Зарегистрироваться
+                        <Button type="link" block onClick={() => navigate('/login')} style={{ marginTop: 8 }}>
+                            Уже есть аккаунт? Войти
                         </Button>
                     </Form.Item>
                 </Form>
