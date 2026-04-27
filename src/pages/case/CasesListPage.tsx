@@ -1,5 +1,5 @@
 import {Alert, App, Button, Card, Empty, Form, Input, Modal, Select, Space, Spin, Tag, Tree, Typography} from "antd";
-import {FolderOpenOutlined, FolderOutlined, FileTextOutlined} from "@ant-design/icons";
+import {DownloadOutlined, FolderOpenOutlined, FolderOutlined, FileTextOutlined} from "@ant-design/icons";
 import {useMemo, useState} from "react";
 import {useNavigate} from "react-router";
 import type {DataNode} from "antd/es/tree";
@@ -9,6 +9,7 @@ import {useCreateGroup, useGroups} from "../../hooks/case/groupHooks.ts";
 import type {ICaseCompact} from "../../models/case/case.ts";
 import type {IGroup} from "../../models/case/group.ts";
 import {buildGroupOptions, buildGroupPathMap} from "../../utils/caseGroupTree.ts";
+import caseService from "../../services/case/caseService.ts";
 
 const {Text} = Typography;
 
@@ -102,6 +103,7 @@ export const CasesListPage = () => {
 
     const [selectedNode, setSelectedNode] = useState<SelectedNode | null>(null);
     const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
     const [createGroupForm] = Form.useForm<CreateGroupFormValues>();
 
     const treeData = useMemo(
@@ -180,6 +182,20 @@ export const CasesListPage = () => {
         );
     };
 
+    const selectedGroupId = selectedNode?.kind === "group" ? selectedNode.id : undefined;
+
+    const handleExport = async () => {
+        setIsExporting(true);
+        try {
+            await caseService.exportCases("csv", selectedGroupId ? {groupId: selectedGroupId} : undefined);
+            message.success("Экспорт подготовлен");
+        } catch {
+            message.error("Не удалось экспортировать кейсы");
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     if (isCasesLoading || isGroupsLoading) {
         return <Spin />;
     }
@@ -194,6 +210,9 @@ export const CasesListPage = () => {
                 <Space style={{width: "100%", justifyContent: "space-between", marginBottom: 16}}>
                     <Title level={2} style={{margin: 0}}>Тест-кейсы и группы</Title>
                     <Space>
+                        <Button icon={<DownloadOutlined />} loading={isExporting} onClick={handleExport}>
+                            Экспорт CSV
+                        </Button>
                         <Button onClick={openCreateGroupModal}>Добавить группу</Button>
                         <Button type="primary" onClick={() => navigate("/cases/create")}>
                             Создать кейс
