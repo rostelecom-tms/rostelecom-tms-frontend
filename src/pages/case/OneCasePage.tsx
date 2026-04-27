@@ -1,4 +1,4 @@
-import {ArrowLeftOutlined, PlusOutlined} from "@ant-design/icons";
+import {ArrowLeftOutlined, DownloadOutlined, PlusOutlined} from "@ant-design/icons";
 import {
     Alert,
     App,
@@ -28,6 +28,7 @@ import {useAiProviders, useSimilarCases, useSuggestForCase} from "../../hooks/ai
 import type {IRun} from "../../models/run/run.ts";
 import {getRunExecutorLabel, getRunStatusColor} from "../../utils/runPresentation.ts";
 import {getAiErrorMessage} from "../../utils/aiErrors.ts";
+import caseService from "../../services/case/caseService.ts";
 
 const {Title, Paragraph, Text} = Typography
 
@@ -44,6 +45,7 @@ export const OneCasePage = () => {
     const {message} = App.useApp()
 
     const [isCreateRunModalOpen, setIsCreateRunModalOpen] = useState(false)
+    const [isPdfExporting, setIsPdfExporting] = useState(false)
     const [createRunForm] = Form.useForm<CreateRunFormValues>()
 
     const {data: testCase, isLoading, isError} = useCase(caseId)
@@ -140,6 +142,18 @@ export const OneCasePage = () => {
         )
     }
 
+    const handlePdfExport = async () => {
+        setIsPdfExporting(true)
+        try {
+            await caseService.exportCasePdf(caseId)
+            void message.success("PDF подготовлен")
+        } catch {
+            void message.error("Не удалось скачать PDF")
+        } finally {
+            setIsPdfExporting(false)
+        }
+    }
+
     return (
         <Space direction="vertical" size="large" style={{width: "100%"}}>
             <Space direction="vertical" size="middle" style={{width: "100%"}}>
@@ -161,6 +175,10 @@ export const OneCasePage = () => {
 
                     <Button onClick={() => navigate(`/cases/${caseId}/edit`)}>
                         Редактировать
+                    </Button>
+
+                    <Button icon={<DownloadOutlined/>} loading={isPdfExporting} onClick={handlePdfExport}>
+                        Скачать PDF
                     </Button>
 
                     <Popconfirm
