@@ -13,6 +13,22 @@ export interface ICaseListParams {
     size?: number
 }
 
+export type CaseExportFormat = 'csv'
+
+const filenameFromDisposition = (disposition?: string): string | undefined => {
+    if (!disposition) {
+        return undefined
+    }
+
+    const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i)
+    if (utf8Match?.[1]) {
+        return decodeURIComponent(utf8Match[1])
+    }
+
+    const filenameMatch = disposition.match(/filename="?([^";]+)"?/i)
+    return filenameMatch?.[1]
+}
+
 export default {
     listPage: async (params?: ICaseListParams): Promise<IPageResponse<ICaseCompact>> => {
         const response = await api.get<IPageResponse<ICaseCompact>>("/cases", {params})
@@ -47,5 +63,41 @@ export default {
 
     delete: async (id: number): Promise<void> => {
         await api.delete<void>(`/cases/${id}`)
+    },
+
+    exportCases: async (format: CaseExportFormat, params?: Omit<ICaseListParams, 'page' | 'size'>): Promise<void> => {
+        const response = await api.get<Blob>("/cases/export", {
+            params: {
+                ...params,
+                format,
+            },
+            responseType: 'blob',
+        })
+
+        const filename = filenameFromDisposition(response.headers['content-disposition']) ?? `test-cases.${format}`
+        const url = URL.createObjectURL(response.data)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = filename
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        URL.revokeObjectURL(url)
+    },
+
+    exportCasePdf: async (id: number): Promise<void> => {
+        const response = await api.get<Blob>(`/cases/${id}/export/pdf`, {
+            responseType: 'blob',
+        })
+
+        const filename = filenameFromDisposition(response.headers['content-disposition']) ?? `test-case-${id}.pdf`
+        const url = URL.createObjectURL(response.data)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = filename
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        URL.revokeObjectURL(url)
     }
 }
