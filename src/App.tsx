@@ -3,6 +3,7 @@ import {DashboardPage} from "./pages/dashboard/DashboardPage.tsx";
 import {AppLayout} from "./components/layout/AppLayout.tsx";
 import {PrivateRoute} from "./components/routes/PrivateRoute.tsx";
 import {LoginPage} from "./pages/auth/LoginPage.tsx";
+import {RegisterPage} from "./pages/auth/RegisterPage.tsx";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {StrictMode} from "react";
 import {CasesListPage} from "./pages/case/CasesListPage.tsx";
@@ -29,6 +30,7 @@ export const App = () => {
                 <AntApp>
                 <Routes>
                     <Route path="/login" element={<LoginPage/>}/>
+                    <Route path="/register" element={<RegisterPage/>}/>
 
                     <Route element={<PrivateRoute/>}>
                         <Route path="/" element={<AppLayout/>}>
