@@ -1,6 +1,7 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import userService from "../../services/user/userService.ts";
 import type {IUserCreateRequest, IUserUpdateRequest, IRegistrationRequest} from "../../models/user/user.ts";
+import {useNavigate} from "react-router";
 
 export const useUsers = () => {
     return useQuery({
@@ -53,6 +54,19 @@ export const useDeleteUser = () => {
         },
     })
 }
+
+export const useLogout = () => {
+    const queryClient = useQueryClient();
+    const navigate = useNavigate();
+
+    return useMutation({
+        mutationFn: () => userService.logout(),
+        onSuccess: () => {
+            queryClient.clear();
+            navigate("/login");
+        },
+    });
+};
 
 export const useRegistrationRequests = (enabled: boolean) => {
     return useQuery<IRegistrationRequest[]>({
