@@ -20,6 +20,14 @@ export default {
         localStorage.setItem('accessToken', response.data.accessToken)
     },
 
+    logout: async (): Promise<void> => {
+        try {
+            await api.post(`/auth/logout`);
+        } finally {
+            localStorage.removeItem('accessToken');
+        }
+    },
+
     register: async (request: IUserRegistrationRequest): Promise<void> => {
         await api.post(`/auth/register`, request)
     },
