@@ -454,11 +454,6 @@ export const UsersListPage = () => {
         { title: "Email", dataIndex: "email", key: "email" },
         { title: "Имя", dataIndex: "username", key: "username" },
         {
-            title: "Проект",
-            key: "project",
-            render: (_, rec) => rec.projectId ? `${rec.projectName || 'Неизвестен'} (#${rec.projectId})` : <Tag>Без проекта</Tag>
-        },
-        {
             title: "Действия",
             key: "actions",
             width: 230,
