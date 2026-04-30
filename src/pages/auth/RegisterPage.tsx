@@ -80,14 +80,6 @@ export const RegisterPage = () => {
                         <Input.Password placeholder="Введите пароль" />
                     </Form.Item>
 
-                    <Form.Item
-                        label="ID Проекта (опционально)"
-                        name="projectId"
-                        help="Если указать ID, заявка попадет тимлиду проекта"
-                    >
-                        <InputNumber style={{ width: '100%' }} placeholder="Например: 12" />
-                    </Form.Item>
-
                     <Form.Item style={{ marginBottom: 0 }}>
                         <Button type="primary" htmlType="submit" block>
                             Зарегистрироваться
