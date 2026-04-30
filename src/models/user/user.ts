@@ -38,14 +38,11 @@ export interface IUserRegistrationRequest {
     email: string;
     username: string;
     password: string;
-    projectId?: number;
 }
 
 export interface IRegistrationRequest {
     id: number;
     email: string;
     username: string;
-    projectId?: number;
-    projectName?: string;
     createdAt: string;
 }
