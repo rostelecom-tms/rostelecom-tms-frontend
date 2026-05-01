@@ -1,4 +1,4 @@
-import { Button, Card, Form, Input, InputNumber, Typography, App } from 'antd'
+import { Button, Card, Form, Input, Typography, App } from 'antd'
 import { useNavigate } from "react-router";
 import userService from "../../services/user/userService.ts";
 import type { IUserRegistrationRequest } from "../../models/user/user.ts";
@@ -14,8 +14,8 @@ export const RegisterPage = () => {
             await userService.register(values)
             message.success('Заявка на регистрацию отправлена! Ожидайте одобрения.')
             navigate('/login')
-        } catch (e) {
-            message.error('Ошибка при регистрации')
+        } catch {
+            message.error('Ошибка при регистрации. Логин или пароль уже заняты')
         }
     }
 
