@@ -14,6 +14,15 @@ export interface ICaseListParams {
 }
 
 export type CaseExportFormat = 'csv'
+export type CaseImportFormat = 'csv' | 'pdf'
+
+export interface ICaseImportResult {
+    imported?: number
+    created?: number
+    updated?: number
+    skipped?: number
+    errors?: string[]
+}
 
 const filenameFromDisposition = (disposition?: string): string | undefined => {
     if (!disposition) {
@@ -99,5 +108,22 @@ export default {
         link.click()
         link.remove()
         URL.revokeObjectURL(url)
-    }
+    },
+
+    importCases: async (
+        format: CaseImportFormat,
+        file: File,
+        groupId?: number
+    ): Promise<ICaseImportResult> => {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const response = await api.post<ICaseImportResult>('/cases/import', formData, {
+            params: {
+                format,
+                groupId,
+            },
+        })
+        return response.data
+    },
 }
