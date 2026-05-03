@@ -1,15 +1,17 @@
-import {Alert, App, Button, Card, Empty, Form, Input, Modal, Select, Space, Spin, Tag, Tree, Typography} from "antd";
-import {DownloadOutlined, FolderOpenOutlined, FolderOutlined, FileTextOutlined} from "@ant-design/icons";
+import {Alert, App, Button, Card, Empty, Form, Input, Modal, Select, Space, Spin, Tag, Tree, Typography, Upload} from "antd";
+import type {UploadProps} from "antd";
+import {DownloadOutlined, FolderOpenOutlined, FolderOutlined, FileTextOutlined, UploadOutlined} from "@ant-design/icons";
 import {useMemo, useState} from "react";
 import {useNavigate} from "react-router";
 import type {DataNode} from "antd/es/tree";
 import Title from "antd/lib/typography/Title";
-import {useCases} from "../../hooks/case/caseHooks.ts";
+import {useCases, useImportCases} from "../../hooks/case/caseHooks.ts";
 import {useCreateGroup, useGroups} from "../../hooks/case/groupHooks.ts";
 import type {ICaseCompact} from "../../models/case/case.ts";
 import type {IGroup} from "../../models/case/group.ts";
 import {buildGroupOptions, buildGroupPathMap} from "../../utils/caseGroupTree.ts";
 import caseService from "../../services/case/caseService.ts";
+import type {CaseImportFormat, ICaseImportResult} from "../../services/case/caseService.ts";
 
 const {Text} = Typography;
 
@@ -27,6 +29,21 @@ interface CreateGroupFormValues {
     name: string;
     slug: string;
     parentId?: number;
+}
+
+const formatImportResult = (result: ICaseImportResult, format: CaseImportFormat): string => {
+    const stats = [
+        result.imported != null ? `импортировано: ${result.imported}` : null,
+        result.created != null ? `создано: ${result.created}` : null,
+        result.updated != null ? `обновлено: ${result.updated}` : null,
+        result.skipped != null ? `пропущено: ${result.skipped}` : null,
+    ].filter(Boolean)
+
+    if (stats.length === 0) {
+        return `Импорт ${format.toUpperCase()} завершен`
+    }
+
+    return `Импорт ${format.toUpperCase()} завершен, ${stats.join(", ")}`
 }
 
 const buildExplorerTree = (groups: IGroup[], cases: ICaseCompact[]): ExplorerNode[] => {
@@ -100,10 +117,12 @@ export const CasesListPage = () => {
     const {data: cases, isLoading: isCasesLoading, isError: isCasesError} = useCases();
     const {data: groups, isLoading: isGroupsLoading, isError: isGroupsError} = useGroups();
     const createGroupMutation = useCreateGroup();
+    const importCasesMutation = useImportCases();
 
     const [selectedNode, setSelectedNode] = useState<SelectedNode | null>(null);
     const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const [importingFormat, setImportingFormat] = useState<CaseImportFormat | null>(null);
     const [createGroupForm] = Form.useForm<CreateGroupFormValues>();
 
     const treeData = useMemo(
@@ -183,6 +202,43 @@ export const CasesListPage = () => {
     };
 
     const selectedGroupId = selectedNode?.kind === "group" ? selectedNode.id : undefined;
+    const importGroupId = selectedNode?.kind === "group"
+        ? selectedNode.id
+        : selectedNode?.kind === "case"
+            ? selectedNode.groupId
+            : undefined;
+
+    const handleImport = async (format: CaseImportFormat, file: File) => {
+        if (format === "pdf" && importGroupId == null) {
+            message.warning("Выберите группу для импорта PDF");
+            return;
+        }
+
+        setImportingFormat(format);
+        try {
+            const result = await importCasesMutation.mutateAsync({
+                format,
+                file,
+                groupId: importGroupId,
+            });
+            message.success(formatImportResult(result, format));
+        } catch {
+            message.error(`Не удалось импортировать ${format.toUpperCase()}`);
+        } finally {
+            setImportingFormat(null);
+        }
+    };
+
+    const uploadProps = (format: CaseImportFormat, accept: string): UploadProps => ({
+        accept,
+        beforeUpload: file => {
+            void handleImport(format, file);
+            return false;
+        },
+        disabled: importCasesMutation.isPending,
+        maxCount: 1,
+        showUploadList: false,
+    });
 
     const handleExport = async () => {
         setIsExporting(true);
@@ -210,6 +266,24 @@ export const CasesListPage = () => {
                 <Space style={{width: "100%", justifyContent: "space-between", marginBottom: 16}}>
                     <Title level={2} style={{margin: 0}}>Тест-кейсы и группы</Title>
                     <Space>
+                        <Upload {...uploadProps("csv", ".csv,text/csv")}>
+                            <Button
+                                icon={<UploadOutlined />}
+                                loading={importingFormat === "csv"}
+                                disabled={importCasesMutation.isPending}
+                            >
+                                Импорт CSV
+                            </Button>
+                        </Upload>
+                        <Upload {...uploadProps("pdf", ".pdf,application/pdf")}>
+                            <Button
+                                icon={<UploadOutlined />}
+                                loading={importingFormat === "pdf"}
+                                disabled={importCasesMutation.isPending}
+                            >
+                                Импорт PDF
+                            </Button>
+                        </Upload>
                         <Button icon={<DownloadOutlined />} loading={isExporting} onClick={handleExport}>
                             Экспорт CSV
                         </Button>
