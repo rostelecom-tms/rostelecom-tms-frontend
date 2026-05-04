@@ -60,11 +60,13 @@ export const useLogout = () => {
     const navigate = useNavigate();
 
     return useMutation({
-        mutationFn: () => userService.logout(),
-        onSuccess: () => {
+        mutationFn: async () => undefined,
+        onMutate: () => {
+            localStorage.removeItem('accessToken');
             queryClient.clear();
-            navigate("/login");
+            navigate("/login", { replace: true });
         },
+        retry: false,
     });
 };
 

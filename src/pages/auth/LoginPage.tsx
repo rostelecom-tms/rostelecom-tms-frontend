@@ -1,15 +1,32 @@
 import { Button, Card, Form, Input, Typography } from 'antd'
+import { useEffect, useMemo } from 'react'
 import userService from "../../services/user/userService.ts";
 import type {IUserLoginRequest} from "../../models/user/user.ts";
 import {Navigate, useNavigate} from "react-router";
 import {useMe} from "../../hooks/user/userHooks.ts";
 
 const { Title, Text } = Typography
+const LOGIN_DRAFT_KEY = 'login-form-draft'
+
+const readLoginDraft = (): Partial<IUserLoginRequest> => {
+    try {
+        const savedDraft = sessionStorage.getItem(LOGIN_DRAFT_KEY)
+        return savedDraft ? JSON.parse(savedDraft) as Partial<IUserLoginRequest> : {}
+    } catch {
+        return {}
+    }
+}
 
 export const LoginPage = () => {
     const navigate = useNavigate()
+    const [form] = Form.useForm<IUserLoginRequest>()
+    const initialValues = useMemo(() => readLoginDraft(), [])
 
     const { data: me, isLoading } = useMe()
+
+    useEffect(() => {
+        form.setFieldsValue(initialValues)
+    }, [form, initialValues])
 
     if (isLoading) return <div/>
 
@@ -19,7 +36,12 @@ export const LoginPage = () => {
 
     const onFinish = async (credentials: IUserLoginRequest) => {
         await userService.login(credentials)
+        sessionStorage.removeItem(LOGIN_DRAFT_KEY)
         navigate(`/dashboard`, {replace: true})
+    }
+
+    const onValuesChange = (_: unknown, allValues: IUserLoginRequest) => {
+        sessionStorage.setItem(LOGIN_DRAFT_KEY, JSON.stringify(allValues))
     }
 
     return (
@@ -49,8 +71,10 @@ export const LoginPage = () => {
                 </Text>
 
                 <Form<IUserLoginRequest>
+                    form={form}
                     layout="vertical"
                     onFinish={onFinish}
+                    onValuesChange={onValuesChange}
                     autoComplete="off"
                 >
                     <Form.Item
