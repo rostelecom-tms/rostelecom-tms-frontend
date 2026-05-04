@@ -71,7 +71,7 @@ export const AppLayout: FC = () => {
                                 fontWeight: 600,
                             }}
                         >
-                            <img src="/public/logo.png" alt="logo" style={{ height: 64 }}/>
+                            <img src="/logo.png" alt="logo" style={{ height: 64 }}/>
                         </div>
 
                         <Menu
